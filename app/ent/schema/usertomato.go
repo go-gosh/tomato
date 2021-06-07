@@ -22,7 +22,8 @@ func (UserTomato) Fields() []ent.Field {
 			Immutable().
 			Default(time.Now),
 		field.Time("end_time").
-			Nillable(),
+			Nillable().
+			Optional(),
 	}
 }
 
