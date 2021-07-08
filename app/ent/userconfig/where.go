@@ -3,7 +3,7 @@
 package userconfig
 
 import (
-	"cauliflower/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

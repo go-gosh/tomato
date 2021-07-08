@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"cauliflower/app/ent"
-	"cauliflower/app/ent/migrate"
-	"cauliflower/app/handler"
+	"github.com/go-gosh/tomato/app/ent"
+	"github.com/go-gosh/tomato/app/ent/migrate"
+	"github.com/go-gosh/tomato/app/handler"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"

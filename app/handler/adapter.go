@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"cauliflower/app/context"
-	"cauliflower/app/ent"
+	"github.com/go-gosh/tomato/app/context"
+	"github.com/go-gosh/tomato/app/ent"
 
 	"github.com/gin-gonic/gin"
 )

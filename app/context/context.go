@@ -3,7 +3,7 @@ package context
 import (
 	"net/http"
 
-	"cauliflower/app/ent"
+	"github.com/go-gosh/tomato/app/ent"
 
 	"github.com/gin-gonic/gin"
 )

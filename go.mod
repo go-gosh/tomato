@@ -1,4 +1,4 @@
-module cauliflower
+module github.com/go-gosh/tomato
 
 go 1.16
 

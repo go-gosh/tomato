@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"cauliflower/app/ent/schema"
-	"cauliflower/app/ent/user"
-	"cauliflower/app/ent/usertomato"
+	"github.com/go-gosh/tomato/app/ent/schema"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"time"
 )
 
