@@ -3,10 +3,10 @@
 package enttest
 
 import (
-	"cauliflower/app/ent"
+	"github.com/go-gosh/tomato/app/ent"
 	"context"
 	// required by schema hooks.
-	_ "cauliflower/app/ent/runtime"
+	_ "github.com/go-gosh/tomato/app/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

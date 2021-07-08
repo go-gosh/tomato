@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"cauliflower/app/ent/mixin"
+	"github.com/go-gosh/tomato/app/ent/mixin"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"

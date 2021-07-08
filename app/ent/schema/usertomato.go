@@ -3,7 +3,7 @@ package schema
 import (
 	"time"
 
-	"cauliflower/app/ent/mixin"
+	"github.com/go-gosh/tomato/app/ent/mixin"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"

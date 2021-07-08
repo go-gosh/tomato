@@ -2,7 +2,7 @@
 
 package runtime
 
-// The schema-stitching logic is generated in cauliflower/app/ent/runtime.go
+// The schema-stitching logic is generated in github.com/go-gosh/tomato/app/ent/runtime.go
 
 const (
 	Version = "v0.9.0"                                          // Version of ent codegen.

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"cauliflower/app"
+	"github.com/go-gosh/tomato/app"
 )
 
 func main() {

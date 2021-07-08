@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"cauliflower/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/user"
 	"fmt"
 	"strings"
 	"time"

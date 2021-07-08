@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"cauliflower/app/ent/predicate"
-	"cauliflower/app/ent/user"
-	"cauliflower/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
 	"context"
 	"errors"
 	"fmt"

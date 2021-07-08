@@ -3,7 +3,7 @@
 package hook
 
 import (
-	"cauliflower/app/ent"
+	"github.com/go-gosh/tomato/app/ent"
 	"context"
 	"fmt"
 )

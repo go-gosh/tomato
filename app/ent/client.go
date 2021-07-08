@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"cauliflower/app/ent/migrate"
+	"github.com/go-gosh/tomato/app/ent/migrate"
 
-	"cauliflower/app/ent/user"
-	"cauliflower/app/ent/userconfig"
-	"cauliflower/app/ent/usertomato"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
