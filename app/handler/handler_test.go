@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,6 +37,24 @@ func (s _handlerTestSuite) Test_WorkingOnTomato() {
 	s.engine.ServeHTTP(w, req)
 	s.Equal(http.StatusOK, w.Code)
 	s.Equal(`{"code":200,"data":null,"message":"not found tomato"}`, w.Body.String())
+}
+
+func (s _handlerTestSuite) Test_StartTomato() {
+	w := httptest.NewRecorder()
+	var b bytes.Buffer
+	b.WriteString(`{"duration":60}`)
+	req, _ := http.NewRequest("POST", "/api/v1/tomato", &b)
+	s.engine.ServeHTTP(w, req)
+	s.Equal(http.StatusOK, w.Code)
+	resp := struct {
+		Code    int                    `json:"code"`
+		Message string                 `json:"message"`
+		Data    map[string]interface{} `json:"data"`
+	}{}
+	s.NoError(json.Unmarshal(w.Body.Bytes(), &resp))
+	s.EqualValues(200, resp.Code)
+	s.NotEmpty(resp.Data["id"])
+	s.T().Logf("%+v", resp)
 }
 
 func TestService(t *testing.T) {
