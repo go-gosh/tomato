@@ -31,7 +31,12 @@ func (s *_handlerTestSuite) SetupSuite() {
 	s.svc.RegisterRoute(s.engine)
 }
 
-func (s _handlerTestSuite) Test_WorkingOnTomato() {
+func (s _handlerTestSuite) Test_NormalCase() {
+	s.testWorkingOnTomato()
+	s.testStartTomato()
+}
+
+func (s _handlerTestSuite) testWorkingOnTomato() {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/working-tomato", nil)
 	s.engine.ServeHTTP(w, req)
@@ -39,7 +44,7 @@ func (s _handlerTestSuite) Test_WorkingOnTomato() {
 	s.Equal(`{"code":200,"data":null,"message":"not found tomato"}`, w.Body.String())
 }
 
-func (s _handlerTestSuite) Test_StartTomato() {
+func (s _handlerTestSuite) testStartTomato() {
 	w := httptest.NewRecorder()
 	var b bytes.Buffer
 	b.WriteString(`{"duration":60}`)
