@@ -3,9 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
 	"errors"
 	"fmt"
@@ -14,6 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserTomatoQuery is the builder for querying UserTomato entities.
@@ -27,7 +27,6 @@ type UserTomatoQuery struct {
 	predicates []predicate.UserTomato
 	// eager-loading edges.
 	withUsers *UserQuery
-	withFKs   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -349,18 +348,11 @@ func (utq *UserTomatoQuery) prepareQuery(ctx context.Context) error {
 func (utq *UserTomatoQuery) sqlAll(ctx context.Context) ([]*UserTomato, error) {
 	var (
 		nodes       = []*UserTomato{}
-		withFKs     = utq.withFKs
 		_spec       = utq.querySpec()
 		loadedTypes = [1]bool{
 			utq.withUsers != nil,
 		}
 	)
-	if utq.withUsers != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, usertomato.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &UserTomato{config: utq.config}
 		nodes = append(nodes, node)
@@ -385,10 +377,7 @@ func (utq *UserTomatoQuery) sqlAll(ctx context.Context) ([]*UserTomato, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*UserTomato)
 		for i := range nodes {
-			if nodes[i].user_user_tomatoes == nil {
-				continue
-			}
-			fk := *nodes[i].user_user_tomatoes
+			fk := nodes[i].UserID
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -402,7 +391,7 @@ func (utq *UserTomatoQuery) sqlAll(ctx context.Context) ([]*UserTomato, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_user_tomatoes" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.Users = n

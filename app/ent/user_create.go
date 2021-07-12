@@ -3,9 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/userconfig"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
 	"errors"
 	"fmt"
@@ -13,6 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserCreate is the builder for creating a User entity.

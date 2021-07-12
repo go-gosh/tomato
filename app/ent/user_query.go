@@ -3,10 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/userconfig"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
 	"database/sql/driver"
 	"errors"
@@ -16,6 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserQuery is the builder for querying User entities.
@@ -448,7 +448,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 			nodeids[nodes[i].ID] = nodes[i]
 			nodes[i].Edges.UserTomatoes = []*UserTomato{}
 		}
-		query.withFKs = true
 		query.Where(predicate.UserTomato(func(s *sql.Selector) {
 			s.Where(sql.InValues(user.UserTomatoesColumn, fks...))
 		}))
@@ -457,13 +456,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context) ([]*User, error) {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.user_user_tomatoes
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "user_user_tomatoes" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			fk := n.UserID
+			node, ok := nodeids[fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_user_tomatoes" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 			}
 			node.Edges.UserTomatoes = append(node.Edges.UserTomatoes, n)
 		}

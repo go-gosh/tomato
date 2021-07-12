@@ -3,8 +3,9 @@
 package enttest
 
 import (
-	"github.com/go-gosh/tomato/app/ent"
 	"context"
+
+	"github.com/go-gosh/tomato/app/ent"
 	// required by schema hooks.
 	_ "github.com/go-gosh/tomato/app/ent/runtime"
 

@@ -3,10 +3,11 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/go-gosh/tomato/app/ent/schema"
 	"github.com/go-gosh/tomato/app/ent/user"
 	"github.com/go-gosh/tomato/app/ent/usertomato"
-	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -62,7 +63,7 @@ func init() {
 	// usertomato.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	usertomato.UpdateDefaultUpdatedAt = usertomatoDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// usertomatoDescStartTime is the schema descriptor for start_time field.
-	usertomatoDescStartTime := usertomatoFields[0].Descriptor()
+	usertomatoDescStartTime := usertomatoFields[1].Descriptor()
 	// usertomato.DefaultStartTime holds the default value on creation for the start_time field.
 	usertomato.DefaultStartTime = usertomatoDescStartTime.Default.(func() time.Time)
 }

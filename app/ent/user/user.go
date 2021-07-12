@@ -40,7 +40,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "usertomato" package.
 	UserTomatoesInverseTable = "user_tomatos"
 	// UserTomatoesColumn is the table column denoting the user_tomatoes relation/edge.
-	UserTomatoesColumn = "user_user_tomatoes"
+	UserTomatoesColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.

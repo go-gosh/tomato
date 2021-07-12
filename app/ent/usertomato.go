@@ -3,13 +3,13 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserTomato is the model entity for the UserTomato schema.
@@ -21,14 +21,17 @@ type UserTomato struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID int `json:"user_id,omitempty"`
 	// StartTime holds the value of the "start_time" field.
 	StartTime time.Time `json:"start_time,omitempty"`
+	// RemainTime holds the value of the "remain_time" field.
+	RemainTime time.Time `json:"remain_time,omitempty"`
 	// EndTime holds the value of the "end_time" field.
 	EndTime *time.Time `json:"end_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserTomatoQuery when eager-loading is set.
-	Edges              UserTomatoEdges `json:"edges"`
-	user_user_tomatoes *int
+	Edges UserTomatoEdges `json:"edges"`
 }
 
 // UserTomatoEdges holds the relations/edges for other nodes in the graph.
@@ -59,12 +62,10 @@ func (*UserTomato) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case usertomato.FieldID:
+		case usertomato.FieldID, usertomato.FieldUserID:
 			values[i] = new(sql.NullInt64)
-		case usertomato.FieldCreatedAt, usertomato.FieldUpdatedAt, usertomato.FieldStartTime, usertomato.FieldEndTime:
+		case usertomato.FieldCreatedAt, usertomato.FieldUpdatedAt, usertomato.FieldStartTime, usertomato.FieldRemainTime, usertomato.FieldEndTime:
 			values[i] = new(sql.NullTime)
-		case usertomato.ForeignKeys[0]: // user_user_tomatoes
-			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type UserTomato", columns[i])
 		}
@@ -98,11 +99,23 @@ func (ut *UserTomato) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ut.UpdatedAt = value.Time
 			}
+		case usertomato.FieldUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value.Valid {
+				ut.UserID = int(value.Int64)
+			}
 		case usertomato.FieldStartTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_time", values[i])
 			} else if value.Valid {
 				ut.StartTime = value.Time
+			}
+		case usertomato.FieldRemainTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field remain_time", values[i])
+			} else if value.Valid {
+				ut.RemainTime = value.Time
 			}
 		case usertomato.FieldEndTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -110,13 +123,6 @@ func (ut *UserTomato) assignValues(columns []string, values []interface{}) error
 			} else if value.Valid {
 				ut.EndTime = new(time.Time)
 				*ut.EndTime = value.Time
-			}
-		case usertomato.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_user_tomatoes", value)
-			} else if value.Valid {
-				ut.user_user_tomatoes = new(int)
-				*ut.user_user_tomatoes = int(value.Int64)
 			}
 		}
 	}
@@ -155,8 +161,12 @@ func (ut *UserTomato) String() string {
 	builder.WriteString(ut.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(ut.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", user_id=")
+	builder.WriteString(fmt.Sprintf("%v", ut.UserID))
 	builder.WriteString(", start_time=")
 	builder.WriteString(ut.StartTime.Format(time.ANSIC))
+	builder.WriteString(", remain_time=")
+	builder.WriteString(ut.RemainTime.Format(time.ANSIC))
 	if v := ut.EndTime; v != nil {
 		builder.WriteString(", end_time=")
 		builder.WriteString(v.Format(time.ANSIC))
