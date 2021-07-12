@@ -24,6 +24,7 @@ func (s *Service) RegisterRoute(engine *gin.Engine) {
 	v1 := engine.Group("/api/v1")
 	v1.GET("/working-tomato", ginAdapter(s.GetWorkingOnTomato))
 	v1.POST("/tomato", ginAdapter(s.StartTomato))
+	v1.POST("/closing-tomato", ginAdapter(s.CloseTomato))
 }
 
 // GetWorkingOnTomato get a working on tomato clock for login user
@@ -106,4 +107,23 @@ func (s Service) StartTomato(ctx *context.Context) error {
 	ctx.Response(http.StatusOK, t, "")
 
 	return nil
+}
+
+func (s Service) CloseTomato(ctx *context.Context) (err error) {
+	us, err := ctx.LoginUser()
+	if err != nil {
+		return err
+	}
+	err = s.db.UserTomato.Update().
+		Where(usertomato.And(
+			usertomato.UserIDEQ(us.ID),
+			usertomato.EndTimeIsNil(),
+		)).SetEndTime(time.Now()).
+		Exec(ctx)
+	if err != nil {
+		return
+	}
+	ctx.Response(http.StatusOK, gin.H{}, "success")
+
+	return
 }
