@@ -1,0 +1,15 @@
+language: go
+go:
+  - 1.16.x
+  - master
+
+go_import_path: github.com/go-gosh/tomato
+
+before_install:
+  - go get -t -v ./...
+
+script:
+  - make test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
