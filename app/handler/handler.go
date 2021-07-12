@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/go-gosh/tomato/app/context"
 	"github.com/go-gosh/tomato/app/ent"
@@ -49,16 +51,53 @@ func (s Service) GetWorkingOnTomato(ctx *context.Context) error {
 	return nil
 }
 
-// StartTomato TODO implements me
+// StartTomato start a tomato clock if there is no working tomato clock.
 func (s Service) StartTomato(ctx *context.Context) error {
-	user, err := ctx.LoginUser()
+	req := struct {
+		// Duration unit is second
+		Duration int `json:"duration" binding:"required,min=1"`
+	}{}
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		return err
 	}
-	t, err := s.db.UserTomato.Create().
-		SetUsersID(user.ID).
+
+	us, err := ctx.LoginUser()
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+
+	c, err := tx.UserTomato.Query().Where(
+		usertomato.UserID(us.ID),
+		usertomato.EndTimeIsNil(),
+	).Count(ctx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if c > 0 {
+		tx.Rollback()
+		return errors.New("one tomato clock is working")
+	}
+
+	timestamp := time.Now()
+	t, err := tx.UserTomato.Create().
+		SetUsersID(us.ID).
+		SetStartTime(timestamp).
+		SetRemainTime(timestamp.Add(time.Duration(req.Duration) * time.Second)).
 		Save(ctx)
 	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
 	ctx.Response(http.StatusOK, t, "")
