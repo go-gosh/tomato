@@ -41,6 +41,12 @@ func (utu *UserTomatoUpdate) SetUserID(i int) *UserTomatoUpdate {
 	return utu
 }
 
+// SetColor sets the "color" field.
+func (utu *UserTomatoUpdate) SetColor(u usertomato.Color) *UserTomatoUpdate {
+	utu.mutation.SetColor(u)
+	return utu
+}
+
 // SetRemainTime sets the "remain_time" field.
 func (utu *UserTomatoUpdate) SetRemainTime(t time.Time) *UserTomatoUpdate {
 	utu.mutation.SetRemainTime(t)
@@ -160,6 +166,11 @@ func (utu *UserTomatoUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (utu *UserTomatoUpdate) check() error {
+	if v, ok := utu.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf("ent: validator failed for field \"color\": %w", err)}
+		}
+	}
 	if _, ok := utu.mutation.UsersID(); utu.mutation.UsersCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"users\"")
 	}
@@ -189,6 +200,13 @@ func (utu *UserTomatoUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: usertomato.FieldUpdatedAt,
+		})
+	}
+	if value, ok := utu.mutation.Color(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
 		})
 	}
 	if value, ok := utu.mutation.RemainTime(); ok {
@@ -274,6 +292,12 @@ func (utuo *UserTomatoUpdateOne) SetUpdatedAt(t time.Time) *UserTomatoUpdateOne 
 // SetUserID sets the "user_id" field.
 func (utuo *UserTomatoUpdateOne) SetUserID(i int) *UserTomatoUpdateOne {
 	utuo.mutation.SetUserID(i)
+	return utuo
+}
+
+// SetColor sets the "color" field.
+func (utuo *UserTomatoUpdateOne) SetColor(u usertomato.Color) *UserTomatoUpdateOne {
+	utuo.mutation.SetColor(u)
 	return utuo
 }
 
@@ -403,6 +427,11 @@ func (utuo *UserTomatoUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (utuo *UserTomatoUpdateOne) check() error {
+	if v, ok := utuo.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf("ent: validator failed for field \"color\": %w", err)}
+		}
+	}
 	if _, ok := utuo.mutation.UsersID(); utuo.mutation.UsersCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"users\"")
 	}
@@ -449,6 +478,13 @@ func (utuo *UserTomatoUpdateOne) sqlSave(ctx context.Context) (_node *UserTomato
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: usertomato.FieldUpdatedAt,
+		})
+	}
+	if value, ok := utuo.mutation.Color(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
 		})
 	}
 	if value, ok := utuo.mutation.RemainTime(); ok {

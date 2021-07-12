@@ -3,6 +3,7 @@
 package usertomato
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -19,6 +20,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldStartTime holds the string denoting the start_time field in the database.
 	FieldStartTime = "start_time"
+	// FieldColor holds the string denoting the color field in the database.
+	FieldColor = "color"
 	// FieldRemainTime holds the string denoting the remain_time field in the database.
 	FieldRemainTime = "remain_time"
 	// FieldEndTime holds the string denoting the end_time field in the database.
@@ -43,6 +46,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldUserID,
 	FieldStartTime,
+	FieldColor,
 	FieldRemainTime,
 	FieldEndTime,
 }
@@ -67,3 +71,26 @@ var (
 	// DefaultStartTime holds the default value on creation for the "start_time" field.
 	DefaultStartTime func() time.Time
 )
+
+// Color defines the type for the "color" enum field.
+type Color string
+
+// Color values.
+const (
+	ColorRed   Color = "red"
+	ColorGreen Color = "green"
+)
+
+func (c Color) String() string {
+	return string(c)
+}
+
+// ColorValidator is a validator for the "color" field enum values. It is called by the builders before save.
+func ColorValidator(c Color) error {
+	switch c {
+	case ColorRed, ColorGreen:
+		return nil
+	default:
+		return fmt.Errorf("usertomato: invalid enum value for color field: %q", c)
+	}
+}

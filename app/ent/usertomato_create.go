@@ -69,6 +69,12 @@ func (utc *UserTomatoCreate) SetNillableStartTime(t *time.Time) *UserTomatoCreat
 	return utc
 }
 
+// SetColor sets the "color" field.
+func (utc *UserTomatoCreate) SetColor(u usertomato.Color) *UserTomatoCreate {
+	utc.mutation.SetColor(u)
+	return utc
+}
+
 // SetRemainTime sets the "remain_time" field.
 func (utc *UserTomatoCreate) SetRemainTime(t time.Time) *UserTomatoCreate {
 	utc.mutation.SetRemainTime(t)
@@ -199,6 +205,14 @@ func (utc *UserTomatoCreate) check() error {
 	if _, ok := utc.mutation.StartTime(); !ok {
 		return &ValidationError{Name: "start_time", err: errors.New(`ent: missing required field "start_time"`)}
 	}
+	if _, ok := utc.mutation.Color(); !ok {
+		return &ValidationError{Name: "color", err: errors.New(`ent: missing required field "color"`)}
+	}
+	if v, ok := utc.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf(`ent: validator failed for field "color": %w`, err)}
+		}
+	}
 	if _, ok := utc.mutation.RemainTime(); !ok {
 		return &ValidationError{Name: "remain_time", err: errors.New(`ent: missing required field "remain_time"`)}
 	}
@@ -255,6 +269,14 @@ func (utc *UserTomatoCreate) createSpec() (*UserTomato, *sqlgraph.CreateSpec) {
 			Column: usertomato.FieldStartTime,
 		})
 		_node.StartTime = value
+	}
+	if value, ok := utc.mutation.Color(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
+		})
+		_node.Color = value
 	}
 	if value, ok := utc.mutation.RemainTime(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

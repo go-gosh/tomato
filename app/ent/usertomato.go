@@ -25,6 +25,8 @@ type UserTomato struct {
 	UserID int `json:"user_id,omitempty"`
 	// StartTime holds the value of the "start_time" field.
 	StartTime time.Time `json:"start_time,omitempty"`
+	// Color holds the value of the "color" field.
+	Color usertomato.Color `json:"color,omitempty"`
 	// RemainTime holds the value of the "remain_time" field.
 	RemainTime time.Time `json:"remain_time,omitempty"`
 	// EndTime holds the value of the "end_time" field.
@@ -64,6 +66,8 @@ func (*UserTomato) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case usertomato.FieldID, usertomato.FieldUserID:
 			values[i] = new(sql.NullInt64)
+		case usertomato.FieldColor:
+			values[i] = new(sql.NullString)
 		case usertomato.FieldCreatedAt, usertomato.FieldUpdatedAt, usertomato.FieldStartTime, usertomato.FieldRemainTime, usertomato.FieldEndTime:
 			values[i] = new(sql.NullTime)
 		default:
@@ -110,6 +114,12 @@ func (ut *UserTomato) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field start_time", values[i])
 			} else if value.Valid {
 				ut.StartTime = value.Time
+			}
+		case usertomato.FieldColor:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field color", values[i])
+			} else if value.Valid {
+				ut.Color = usertomato.Color(value.String)
 			}
 		case usertomato.FieldRemainTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -165,6 +175,8 @@ func (ut *UserTomato) String() string {
 	builder.WriteString(fmt.Sprintf("%v", ut.UserID))
 	builder.WriteString(", start_time=")
 	builder.WriteString(ut.StartTime.Format(time.ANSIC))
+	builder.WriteString(", color=")
+	builder.WriteString(fmt.Sprintf("%v", ut.Color))
 	builder.WriteString(", remain_time=")
 	builder.WriteString(ut.RemainTime.Format(time.ANSIC))
 	if v := ut.EndTime; v != nil {

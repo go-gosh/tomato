@@ -22,6 +22,8 @@ func (UserTomato) Fields() []ent.Field {
 		field.Time("start_time").
 			Immutable().
 			Default(time.Now),
+		field.Enum("color").
+			Values("red", "green"),
 		field.Time("remain_time"),
 		field.Time("end_time").
 			Nillable().

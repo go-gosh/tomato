@@ -1294,6 +1294,7 @@ type UserTomatoMutation struct {
 	created_at    *time.Time
 	updated_at    *time.Time
 	start_time    *time.Time
+	color         *usertomato.Color
 	remain_time   *time.Time
 	end_time      *time.Time
 	clearedFields map[string]struct{}
@@ -1527,6 +1528,42 @@ func (m *UserTomatoMutation) ResetStartTime() {
 	m.start_time = nil
 }
 
+// SetColor sets the "color" field.
+func (m *UserTomatoMutation) SetColor(u usertomato.Color) {
+	m.color = &u
+}
+
+// Color returns the value of the "color" field in the mutation.
+func (m *UserTomatoMutation) Color() (r usertomato.Color, exists bool) {
+	v := m.color
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColor returns the old "color" field's value of the UserTomato entity.
+// If the UserTomato object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserTomatoMutation) OldColor(ctx context.Context) (v usertomato.Color, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldColor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldColor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColor: %w", err)
+	}
+	return oldValue.Color, nil
+}
+
+// ResetColor resets all changes to the "color" field.
+func (m *UserTomatoMutation) ResetColor() {
+	m.color = nil
+}
+
 // SetRemainTime sets the "remain_time" field.
 func (m *UserTomatoMutation) SetRemainTime(t time.Time) {
 	m.remain_time = &t
@@ -1670,7 +1707,7 @@ func (m *UserTomatoMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserTomatoMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, usertomato.FieldCreatedAt)
 	}
@@ -1682,6 +1719,9 @@ func (m *UserTomatoMutation) Fields() []string {
 	}
 	if m.start_time != nil {
 		fields = append(fields, usertomato.FieldStartTime)
+	}
+	if m.color != nil {
+		fields = append(fields, usertomato.FieldColor)
 	}
 	if m.remain_time != nil {
 		fields = append(fields, usertomato.FieldRemainTime)
@@ -1705,6 +1745,8 @@ func (m *UserTomatoMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case usertomato.FieldStartTime:
 		return m.StartTime()
+	case usertomato.FieldColor:
+		return m.Color()
 	case usertomato.FieldRemainTime:
 		return m.RemainTime()
 	case usertomato.FieldEndTime:
@@ -1726,6 +1768,8 @@ func (m *UserTomatoMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldUserID(ctx)
 	case usertomato.FieldStartTime:
 		return m.OldStartTime(ctx)
+	case usertomato.FieldColor:
+		return m.OldColor(ctx)
 	case usertomato.FieldRemainTime:
 		return m.OldRemainTime(ctx)
 	case usertomato.FieldEndTime:
@@ -1766,6 +1810,13 @@ func (m *UserTomatoMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStartTime(v)
+		return nil
+	case usertomato.FieldColor:
+		v, ok := value.(usertomato.Color)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColor(v)
 		return nil
 	case usertomato.FieldRemainTime:
 		v, ok := value.(time.Time)
@@ -1853,6 +1904,9 @@ func (m *UserTomatoMutation) ResetField(name string) error {
 		return nil
 	case usertomato.FieldStartTime:
 		m.ResetStartTime()
+		return nil
+	case usertomato.FieldColor:
+		m.ResetColor()
 		return nil
 	case usertomato.FieldRemainTime:
 		m.ResetRemainTime()

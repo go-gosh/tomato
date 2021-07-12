@@ -51,6 +51,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "start_time", Type: field.TypeTime},
+		{Name: "color", Type: field.TypeEnum, Enums: []string{"red", "green"}},
 		{Name: "remain_time", Type: field.TypeTime},
 		{Name: "end_time", Type: field.TypeTime, Nullable: true},
 		{Name: "user_id", Type: field.TypeInt, Nullable: true},
@@ -63,7 +64,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_tomatos_users_user_tomatoes",
-				Columns:    []*schema.Column{UserTomatosColumns[6]},
+				Columns:    []*schema.Column{UserTomatosColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

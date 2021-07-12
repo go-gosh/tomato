@@ -56,6 +56,8 @@ func (s Service) StartTomato(ctx *context.Context) error {
 	req := struct {
 		// Duration unit is second
 		Duration int `json:"duration" binding:"required,min=1"`
+		// Color signed tomato clock type
+		Color string `json:"color" binding:"required,oneof=red green"`
 	}{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -89,6 +91,7 @@ func (s Service) StartTomato(ctx *context.Context) error {
 	t, err := tx.UserTomato.Create().
 		SetUsersID(us.ID).
 		SetStartTime(timestamp).
+		SetColor(usertomato.Color(req.Color)).
 		SetRemainTime(timestamp.Add(time.Duration(req.Duration) * time.Second)).
 		Save(ctx)
 	if err != nil {

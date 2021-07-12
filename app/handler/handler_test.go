@@ -47,7 +47,7 @@ func (s _handlerTestSuite) testWorkingOnTomato() {
 func (s _handlerTestSuite) testStartTomato() {
 	w := httptest.NewRecorder()
 	var b bytes.Buffer
-	b.WriteString(`{"duration":60}`)
+	b.WriteString(`{"duration":60,"color":"red"}`)
 	req, _ := http.NewRequest("POST", "/api/v1/tomato", &b)
 	s.engine.ServeHTTP(w, req)
 	s.Equal(http.StatusOK, w.Code)
