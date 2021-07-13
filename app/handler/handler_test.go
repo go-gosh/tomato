@@ -45,6 +45,8 @@ func (s _handlerTestSuite) Test_NormalCase() {
 	s.testUserNoWorkingOnTomato()
 	s.testStartTomato()
 	s.testUserHasWorkingOnTomato()
+	s.testCloseTomato()
+	s.testUserNoWorkingOnTomato()
 }
 
 func (s _handlerTestSuite) serveApi(w *httptest.ResponseRecorder, req *http.Request) _testResponse {
@@ -80,6 +82,17 @@ func (s _handlerTestSuite) testStartTomato() {
 	resp := s.serveApi(w, req)
 	s.EqualValues(200, resp.Code)
 	s.NotEmpty(resp.Data["id"])
+	s.T().Logf("%+v", resp)
+}
+
+func (s _handlerTestSuite) testCloseTomato() {
+	w := httptest.NewRecorder()
+	var b bytes.Buffer
+	b.WriteString(`{}`)
+	req, _ := http.NewRequest("POST", "/api/v1/closing-tomato", &b)
+	resp := s.serveApi(w, req)
+	s.EqualValues(200, resp.Code)
+	s.Equal("success", resp.Message)
 	s.T().Logf("%+v", resp)
 }
 
