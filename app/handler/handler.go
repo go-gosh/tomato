@@ -1,23 +1,23 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/go-gosh/tomato/app/context"
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/usertomato"
+	"github.com/go-gosh/tomato/app/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
-	db *ent.Client
+	svc *service.Service
 }
 
-func New(db *ent.Client) *Service {
-	return &Service{db: db}
+func New(svc *service.Service) *Service {
+	return &Service{svc: svc}
 }
 
 func (s *Service) RegisterRoute(engine *gin.Engine) {
@@ -33,13 +33,7 @@ func (s Service) GetWorkingOnTomato(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	tomato, err := s.db.UserTomato.Query().
-		Where(usertomato.And(
-			usertomato.UserIDEQ(us.ID),
-			usertomato.EndTimeIsNil(),
-		)).
-		Order(ent.Desc(usertomato.FieldID)).
-		First(ctx)
+	tomato, err := s.svc.GetWorkingTomatoByUserId(ctx, us.ID)
 	if ent.IsNotFound(err) {
 		ctx.Response(http.StatusOK, nil, "not found tomato")
 		return nil
@@ -69,39 +63,14 @@ func (s Service) StartTomato(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	tx, err := s.db.Tx(ctx)
-	if err != nil {
-		return err
+	param := service.TomatoCreate{
+		Duration:  req.Duration,
+		Color:     usertomato.Color(req.Color),
+		UserId:    us.ID,
+		StartTime: time.Now(),
 	}
-
-	c, err := tx.UserTomato.Query().Where(
-		usertomato.UserID(us.ID),
-		usertomato.EndTimeIsNil(),
-	).Count(ctx)
+	t, err := s.svc.CreateTomato(ctx, param)
 	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	if c > 0 {
-		tx.Rollback()
-		return errors.New("one tomato clock is working")
-	}
-
-	timestamp := time.Now()
-	t, err := tx.UserTomato.Create().
-		SetUsersID(us.ID).
-		SetStartTime(timestamp).
-		SetColor(usertomato.Color(req.Color)).
-		SetRemainTime(timestamp.Add(time.Duration(req.Duration) * time.Second)).
-		Save(ctx)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		tx.Rollback()
 		return err
 	}
 	ctx.Response(http.StatusOK, t, "")
@@ -114,12 +83,7 @@ func (s Service) CloseTomato(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	err = s.db.UserTomato.Update().
-		Where(usertomato.And(
-			usertomato.UserIDEQ(us.ID),
-			usertomato.EndTimeIsNil(),
-		)).SetEndTime(time.Now()).
-		Exec(ctx)
+	err = s.svc.CloseTomatoByUserId(ctx, us.ID)
 	if err != nil {
 		return
 	}

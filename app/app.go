@@ -8,6 +8,7 @@ import (
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/migrate"
 	"github.com/go-gosh/tomato/app/handler"
+	"github.com/go-gosh/tomato/app/service"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -39,8 +40,9 @@ func New(path string) (*App, error) {
 	}
 
 	engine := gin.Default()
-	svc := handler.New(db)
-	svc.RegisterRoute(engine)
+	svc := service.New(db)
+	hd := handler.New(svc)
+	hd.RegisterRoute(engine)
 
 	err = engine.Run(fmt.Sprintf(":%d", cf.Application.Port))
 	if err != nil {
