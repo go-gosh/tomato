@@ -15,6 +15,16 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type _testResponse struct {
+	Code    int                    `json:"code"`
+	Message string                 `json:"message"`
+	Data    map[string]interface{} `json:"data"`
+}
+
+func (r *_testResponse) Unmarshal(v *bytes.Buffer) error {
+	return json.Unmarshal(v.Bytes(), r)
+}
+
 type _handlerTestSuite struct {
 	suite.Suite
 	svc    *Service
@@ -32,11 +42,21 @@ func (s *_handlerTestSuite) SetupSuite() {
 }
 
 func (s _handlerTestSuite) Test_NormalCase() {
-	s.testWorkingOnTomato()
+	s.testUserNoWorkingOnTomato()
 	s.testStartTomato()
+	s.testUserHasWorkingOnTomato()
 }
 
-func (s _handlerTestSuite) testWorkingOnTomato() {
+func (s _handlerTestSuite) serveApi(w *httptest.ResponseRecorder, req *http.Request) _testResponse {
+	s.engine.ServeHTTP(w, req)
+	s.Equal(http.StatusOK, w.Code)
+	resp := _testResponse{}
+	s.NoError(resp.Unmarshal(w.Body))
+	s.EqualValues(200, resp.Code)
+	return resp
+}
+
+func (s _handlerTestSuite) testUserNoWorkingOnTomato() {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/working-tomato", nil)
 	s.engine.ServeHTTP(w, req)
@@ -44,19 +64,20 @@ func (s _handlerTestSuite) testWorkingOnTomato() {
 	s.Equal(`{"code":200,"data":null,"message":"not found tomato"}`, w.Body.String())
 }
 
+func (s _handlerTestSuite) testUserHasWorkingOnTomato() {
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/v1/working-tomato", nil)
+	resp := s.serveApi(w, req)
+	s.EqualValues(200, resp.Code)
+	s.NotEmpty(resp.Data["id"])
+}
+
 func (s _handlerTestSuite) testStartTomato() {
 	w := httptest.NewRecorder()
 	var b bytes.Buffer
 	b.WriteString(`{"duration":60,"color":"red"}`)
 	req, _ := http.NewRequest("POST", "/api/v1/tomato", &b)
-	s.engine.ServeHTTP(w, req)
-	s.Equal(http.StatusOK, w.Code)
-	resp := struct {
-		Code    int                    `json:"code"`
-		Message string                 `json:"message"`
-		Data    map[string]interface{} `json:"data"`
-	}{}
-	s.NoError(json.Unmarshal(w.Body.Bytes(), &resp))
+	resp := s.serveApi(w, req)
 	s.EqualValues(200, resp.Code)
 	s.NotEmpty(resp.Data["id"])
 	s.T().Logf("%+v", resp)
