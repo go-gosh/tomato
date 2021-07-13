@@ -18,9 +18,13 @@ type UserTomato struct {
 // Fields of the UserTomato.
 func (UserTomato) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("user_id"),
 		field.Time("start_time").
 			Immutable().
 			Default(time.Now),
+		field.Enum("color").
+			Values("red", "green"),
+		field.Time("remain_time"),
 		field.Time("end_time").
 			Nillable().
 			Optional(),
@@ -39,6 +43,8 @@ func (UserTomato) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("users", User.Type).
 			Ref("user_tomatoes").
+			Field("user_id").
+			Required().
 			Unique(),
 	}
 }

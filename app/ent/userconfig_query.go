@@ -3,9 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/userconfig"
 	"context"
 	"errors"
 	"fmt"
@@ -14,6 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
 )
 
 // UserConfigQuery is the builder for querying UserConfig entities.

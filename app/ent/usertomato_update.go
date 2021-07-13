@@ -3,16 +3,17 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserTomatoUpdate is the builder for updating UserTomato entities.
@@ -31,6 +32,24 @@ func (utu *UserTomatoUpdate) Where(ps ...predicate.UserTomato) *UserTomatoUpdate
 // SetUpdatedAt sets the "updated_at" field.
 func (utu *UserTomatoUpdate) SetUpdatedAt(t time.Time) *UserTomatoUpdate {
 	utu.mutation.SetUpdatedAt(t)
+	return utu
+}
+
+// SetUserID sets the "user_id" field.
+func (utu *UserTomatoUpdate) SetUserID(i int) *UserTomatoUpdate {
+	utu.mutation.SetUserID(i)
+	return utu
+}
+
+// SetColor sets the "color" field.
+func (utu *UserTomatoUpdate) SetColor(u usertomato.Color) *UserTomatoUpdate {
+	utu.mutation.SetColor(u)
+	return utu
+}
+
+// SetRemainTime sets the "remain_time" field.
+func (utu *UserTomatoUpdate) SetRemainTime(t time.Time) *UserTomatoUpdate {
+	utu.mutation.SetRemainTime(t)
 	return utu
 }
 
@@ -60,14 +79,6 @@ func (utu *UserTomatoUpdate) SetUsersID(id int) *UserTomatoUpdate {
 	return utu
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (utu *UserTomatoUpdate) SetNillableUsersID(id *int) *UserTomatoUpdate {
-	if id != nil {
-		utu = utu.SetUsersID(*id)
-	}
-	return utu
-}
-
 // SetUsers sets the "users" edge to the User entity.
 func (utu *UserTomatoUpdate) SetUsers(u *User) *UserTomatoUpdate {
 	return utu.SetUsersID(u.ID)
@@ -92,12 +103,18 @@ func (utu *UserTomatoUpdate) Save(ctx context.Context) (int, error) {
 	)
 	utu.defaults()
 	if len(utu.hooks) == 0 {
+		if err = utu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = utu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserTomatoMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = utu.check(); err != nil {
+				return 0, err
 			}
 			utu.mutation = mutation
 			affected, err = utu.sqlSave(ctx)
@@ -147,6 +164,19 @@ func (utu *UserTomatoUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (utu *UserTomatoUpdate) check() error {
+	if v, ok := utu.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf("ent: validator failed for field \"color\": %w", err)}
+		}
+	}
+	if _, ok := utu.mutation.UsersID(); utu.mutation.UsersCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"users\"")
+	}
+	return nil
+}
+
 func (utu *UserTomatoUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -170,6 +200,20 @@ func (utu *UserTomatoUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: usertomato.FieldUpdatedAt,
+		})
+	}
+	if value, ok := utu.mutation.Color(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
+		})
+	}
+	if value, ok := utu.mutation.RemainTime(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: usertomato.FieldRemainTime,
 		})
 	}
 	if value, ok := utu.mutation.EndTime(); ok {
@@ -245,6 +289,24 @@ func (utuo *UserTomatoUpdateOne) SetUpdatedAt(t time.Time) *UserTomatoUpdateOne 
 	return utuo
 }
 
+// SetUserID sets the "user_id" field.
+func (utuo *UserTomatoUpdateOne) SetUserID(i int) *UserTomatoUpdateOne {
+	utuo.mutation.SetUserID(i)
+	return utuo
+}
+
+// SetColor sets the "color" field.
+func (utuo *UserTomatoUpdateOne) SetColor(u usertomato.Color) *UserTomatoUpdateOne {
+	utuo.mutation.SetColor(u)
+	return utuo
+}
+
+// SetRemainTime sets the "remain_time" field.
+func (utuo *UserTomatoUpdateOne) SetRemainTime(t time.Time) *UserTomatoUpdateOne {
+	utuo.mutation.SetRemainTime(t)
+	return utuo
+}
+
 // SetEndTime sets the "end_time" field.
 func (utuo *UserTomatoUpdateOne) SetEndTime(t time.Time) *UserTomatoUpdateOne {
 	utuo.mutation.SetEndTime(t)
@@ -268,14 +330,6 @@ func (utuo *UserTomatoUpdateOne) ClearEndTime() *UserTomatoUpdateOne {
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (utuo *UserTomatoUpdateOne) SetUsersID(id int) *UserTomatoUpdateOne {
 	utuo.mutation.SetUsersID(id)
-	return utuo
-}
-
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (utuo *UserTomatoUpdateOne) SetNillableUsersID(id *int) *UserTomatoUpdateOne {
-	if id != nil {
-		utuo = utuo.SetUsersID(*id)
-	}
 	return utuo
 }
 
@@ -310,12 +364,18 @@ func (utuo *UserTomatoUpdateOne) Save(ctx context.Context) (*UserTomato, error) 
 	)
 	utuo.defaults()
 	if len(utuo.hooks) == 0 {
+		if err = utuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = utuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserTomatoMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = utuo.check(); err != nil {
+				return nil, err
 			}
 			utuo.mutation = mutation
 			node, err = utuo.sqlSave(ctx)
@@ -365,6 +425,19 @@ func (utuo *UserTomatoUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (utuo *UserTomatoUpdateOne) check() error {
+	if v, ok := utuo.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf("ent: validator failed for field \"color\": %w", err)}
+		}
+	}
+	if _, ok := utuo.mutation.UsersID(); utuo.mutation.UsersCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"users\"")
+	}
+	return nil
+}
+
 func (utuo *UserTomatoUpdateOne) sqlSave(ctx context.Context) (_node *UserTomato, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -405,6 +478,20 @@ func (utuo *UserTomatoUpdateOne) sqlSave(ctx context.Context) (_node *UserTomato
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: usertomato.FieldUpdatedAt,
+		})
+	}
+	if value, ok := utuo.mutation.Color(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
+		})
+	}
+	if value, ok := utuo.mutation.RemainTime(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: usertomato.FieldRemainTime,
 		})
 	}
 	if value, ok := utuo.mutation.EndTime(); ok {

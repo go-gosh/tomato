@@ -3,10 +3,9 @@
 package userconfig
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/go-gosh/tomato/app/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

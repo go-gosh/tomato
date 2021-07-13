@@ -3,12 +3,12 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/user"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/go-gosh/tomato/app/ent/user"
 )
 
 // User is the model entity for the User schema.

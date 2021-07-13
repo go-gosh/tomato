@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
 	"errors"
 	"fmt"
@@ -12,6 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserTomatoCreate is the builder for creating a UserTomato entity.
@@ -49,6 +49,12 @@ func (utc *UserTomatoCreate) SetNillableUpdatedAt(t *time.Time) *UserTomatoCreat
 	return utc
 }
 
+// SetUserID sets the "user_id" field.
+func (utc *UserTomatoCreate) SetUserID(i int) *UserTomatoCreate {
+	utc.mutation.SetUserID(i)
+	return utc
+}
+
 // SetStartTime sets the "start_time" field.
 func (utc *UserTomatoCreate) SetStartTime(t time.Time) *UserTomatoCreate {
 	utc.mutation.SetStartTime(t)
@@ -60,6 +66,18 @@ func (utc *UserTomatoCreate) SetNillableStartTime(t *time.Time) *UserTomatoCreat
 	if t != nil {
 		utc.SetStartTime(*t)
 	}
+	return utc
+}
+
+// SetColor sets the "color" field.
+func (utc *UserTomatoCreate) SetColor(u usertomato.Color) *UserTomatoCreate {
+	utc.mutation.SetColor(u)
+	return utc
+}
+
+// SetRemainTime sets the "remain_time" field.
+func (utc *UserTomatoCreate) SetRemainTime(t time.Time) *UserTomatoCreate {
+	utc.mutation.SetRemainTime(t)
 	return utc
 }
 
@@ -80,14 +98,6 @@ func (utc *UserTomatoCreate) SetNillableEndTime(t *time.Time) *UserTomatoCreate 
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (utc *UserTomatoCreate) SetUsersID(id int) *UserTomatoCreate {
 	utc.mutation.SetUsersID(id)
-	return utc
-}
-
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (utc *UserTomatoCreate) SetNillableUsersID(id *int) *UserTomatoCreate {
-	if id != nil {
-		utc = utc.SetUsersID(*id)
-	}
 	return utc
 }
 
@@ -189,8 +199,25 @@ func (utc *UserTomatoCreate) check() error {
 	if _, ok := utc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
 	}
+	if _, ok := utc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "user_id"`)}
+	}
 	if _, ok := utc.mutation.StartTime(); !ok {
 		return &ValidationError{Name: "start_time", err: errors.New(`ent: missing required field "start_time"`)}
+	}
+	if _, ok := utc.mutation.Color(); !ok {
+		return &ValidationError{Name: "color", err: errors.New(`ent: missing required field "color"`)}
+	}
+	if v, ok := utc.mutation.Color(); ok {
+		if err := usertomato.ColorValidator(v); err != nil {
+			return &ValidationError{Name: "color", err: fmt.Errorf(`ent: validator failed for field "color": %w`, err)}
+		}
+	}
+	if _, ok := utc.mutation.RemainTime(); !ok {
+		return &ValidationError{Name: "remain_time", err: errors.New(`ent: missing required field "remain_time"`)}
+	}
+	if _, ok := utc.mutation.UsersID(); !ok {
+		return &ValidationError{Name: "users", err: errors.New("ent: missing required edge \"users\"")}
 	}
 	return nil
 }
@@ -243,6 +270,22 @@ func (utc *UserTomatoCreate) createSpec() (*UserTomato, *sqlgraph.CreateSpec) {
 		})
 		_node.StartTime = value
 	}
+	if value, ok := utc.mutation.Color(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: usertomato.FieldColor,
+		})
+		_node.Color = value
+	}
+	if value, ok := utc.mutation.RemainTime(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: usertomato.FieldRemainTime,
+		})
+		_node.RemainTime = value
+	}
 	if value, ok := utc.mutation.EndTime(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -268,7 +311,7 @@ func (utc *UserTomatoCreate) createSpec() (*UserTomato, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_user_tomatoes = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

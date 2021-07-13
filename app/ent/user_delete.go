@@ -3,14 +3,14 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
 	"context"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
 )
 
 // UserDelete is the builder for deleting a User entity.

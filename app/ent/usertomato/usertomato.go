@@ -3,6 +3,7 @@
 package usertomato
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -15,8 +16,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldStartTime holds the string denoting the start_time field in the database.
 	FieldStartTime = "start_time"
+	// FieldColor holds the string denoting the color field in the database.
+	FieldColor = "color"
+	// FieldRemainTime holds the string denoting the remain_time field in the database.
+	FieldRemainTime = "remain_time"
 	// FieldEndTime holds the string denoting the end_time field in the database.
 	FieldEndTime = "end_time"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
@@ -29,7 +36,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
 	// UsersColumn is the table column denoting the users relation/edge.
-	UsersColumn = "user_user_tomatoes"
+	UsersColumn = "user_id"
 )
 
 // Columns holds all SQL columns for usertomato fields.
@@ -37,25 +44,17 @@ var Columns = []string{
 	FieldID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldUserID,
 	FieldStartTime,
+	FieldColor,
+	FieldRemainTime,
 	FieldEndTime,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_tomatos"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_user_tomatoes",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -72,3 +71,26 @@ var (
 	// DefaultStartTime holds the default value on creation for the "start_time" field.
 	DefaultStartTime func() time.Time
 )
+
+// Color defines the type for the "color" enum field.
+type Color string
+
+// Color values.
+const (
+	ColorRed   Color = "red"
+	ColorGreen Color = "green"
+)
+
+func (c Color) String() string {
+	return string(c)
+}
+
+// ColorValidator is a validator for the "color" field enum values. It is called by the builders before save.
+func ColorValidator(c Color) error {
+	switch c {
+	case ColorRed, ColorGreen:
+		return nil
+	default:
+		return fmt.Errorf("usertomato: invalid enum value for color field: %q", c)
+	}
+}

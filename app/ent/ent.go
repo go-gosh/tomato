@@ -3,14 +3,14 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/userconfig"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"errors"
 	"fmt"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // ent aliases to avoid import conflicts in user's code.

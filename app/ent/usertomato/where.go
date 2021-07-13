@@ -3,11 +3,11 @@
 package usertomato
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/go-gosh/tomato/app/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -107,10 +107,24 @@ func UpdatedAt(v time.Time) predicate.UserTomato {
 	})
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v int) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUserID), v))
+	})
+}
+
 // StartTime applies equality check predicate on the "start_time" field. It's identical to StartTimeEQ.
 func StartTime(v time.Time) predicate.UserTomato {
 	return predicate.UserTomato(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldStartTime), v))
+	})
+}
+
+// RemainTime applies equality check predicate on the "remain_time" field. It's identical to RemainTimeEQ.
+func RemainTime(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRemainTime), v))
 	})
 }
 
@@ -273,6 +287,54 @@ func UpdatedAtLTE(v time.Time) predicate.UserTomato {
 	})
 }
 
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v int) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUserID), v))
+	})
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v int) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUserID), v))
+	})
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...int) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldUserID), v...))
+	})
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...int) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldUserID), v...))
+	})
+}
+
 // StartTimeEQ applies the EQ predicate on the "start_time" field.
 func StartTimeEQ(v time.Time) predicate.UserTomato {
 	return predicate.UserTomato(func(s *sql.Selector) {
@@ -346,6 +408,130 @@ func StartTimeLT(v time.Time) predicate.UserTomato {
 func StartTimeLTE(v time.Time) predicate.UserTomato {
 	return predicate.UserTomato(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldStartTime), v))
+	})
+}
+
+// ColorEQ applies the EQ predicate on the "color" field.
+func ColorEQ(v Color) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldColor), v))
+	})
+}
+
+// ColorNEQ applies the NEQ predicate on the "color" field.
+func ColorNEQ(v Color) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldColor), v))
+	})
+}
+
+// ColorIn applies the In predicate on the "color" field.
+func ColorIn(vs ...Color) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldColor), v...))
+	})
+}
+
+// ColorNotIn applies the NotIn predicate on the "color" field.
+func ColorNotIn(vs ...Color) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldColor), v...))
+	})
+}
+
+// RemainTimeEQ applies the EQ predicate on the "remain_time" field.
+func RemainTimeEQ(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldRemainTime), v))
+	})
+}
+
+// RemainTimeNEQ applies the NEQ predicate on the "remain_time" field.
+func RemainTimeNEQ(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldRemainTime), v))
+	})
+}
+
+// RemainTimeIn applies the In predicate on the "remain_time" field.
+func RemainTimeIn(vs ...time.Time) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldRemainTime), v...))
+	})
+}
+
+// RemainTimeNotIn applies the NotIn predicate on the "remain_time" field.
+func RemainTimeNotIn(vs ...time.Time) predicate.UserTomato {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserTomato(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldRemainTime), v...))
+	})
+}
+
+// RemainTimeGT applies the GT predicate on the "remain_time" field.
+func RemainTimeGT(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldRemainTime), v))
+	})
+}
+
+// RemainTimeGTE applies the GTE predicate on the "remain_time" field.
+func RemainTimeGTE(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldRemainTime), v))
+	})
+}
+
+// RemainTimeLT applies the LT predicate on the "remain_time" field.
+func RemainTimeLT(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldRemainTime), v))
+	})
+}
+
+// RemainTimeLTE applies the LTE predicate on the "remain_time" field.
+func RemainTimeLTE(v time.Time) predicate.UserTomato {
+	return predicate.UserTomato(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldRemainTime), v))
 	})
 }
 

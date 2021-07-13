@@ -3,10 +3,6 @@
 package ent
 
 import (
-	"github.com/go-gosh/tomato/app/ent/predicate"
-	"github.com/go-gosh/tomato/app/ent/user"
-	"github.com/go-gosh/tomato/app/ent/userconfig"
-	"github.com/go-gosh/tomato/app/ent/usertomato"
 	"context"
 	"fmt"
 	"time"
@@ -14,6 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/predicate"
+	"github.com/go-gosh/tomato/app/ent/user"
+	"github.com/go-gosh/tomato/app/ent/userconfig"
+	"github.com/go-gosh/tomato/app/ent/usertomato"
 )
 
 // UserUpdate is the builder for updating User entities.

@@ -3,9 +3,10 @@
 package hook
 
 import (
-	"github.com/go-gosh/tomato/app/ent"
 	"context"
 	"fmt"
+
+	"github.com/go-gosh/tomato/app/ent"
 )
 
 // The UserFunc type is an adapter to allow the use of ordinary
