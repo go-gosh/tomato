@@ -1,14 +1,13 @@
 package main
 
 import (
-	"log"
-
-	"github.com/go-gosh/tomato/app"
+	"github.com/go-gosh/tomato/app/interactivecli"
 )
 
 func main() {
-	_, err := app.New("./config/config.yaml")
+	a := &interactivecli.MainView{}
+	err := a.Run()
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }
