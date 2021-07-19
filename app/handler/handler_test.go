@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/migrate"
+	"github.com/go-gosh/tomato/app/service"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/suite"
 )
@@ -27,8 +28,9 @@ func (r *_testResponse) Unmarshal(v *bytes.Buffer) error {
 
 type _handlerTestSuite struct {
 	suite.Suite
-	svc    *Service
-	engine *gin.Engine
+	svc     *service.Service
+	engine  *gin.Engine
+	handler *Service
 }
 
 func (s *_handlerTestSuite) SetupSuite() {
@@ -36,9 +38,10 @@ func (s *_handlerTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 	db = db.Debug()
 	s.Require().NoError(db.Schema.Create(context.TODO(), migrate.WithForeignKeys(false)))
-	s.svc = New(db)
+	s.svc = service.New(db)
 	s.engine = gin.Default()
-	s.svc.RegisterRoute(s.engine)
+	s.handler = New(s.svc)
+	s.handler.RegisterRoute(s.engine)
 }
 
 func (s _handlerTestSuite) Test_NormalCase() {
