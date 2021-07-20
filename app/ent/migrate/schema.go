@@ -51,7 +51,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "start_time", Type: field.TypeTime},
-		{Name: "color", Type: field.TypeEnum, Enums: []string{"red", "green"}},
+		{Name: "color", Type: field.TypeEnum, Enums: []string{"1", "2"}, SchemaType: map[string]string{"mysql": "tinyint", "sqlite3": "integer"}},
 		{Name: "remain_time", Type: field.TypeTime},
 		{Name: "end_time", Type: field.TypeTime, Nullable: true},
 		{Name: "user_id", Type: field.TypeInt, Nullable: true},
