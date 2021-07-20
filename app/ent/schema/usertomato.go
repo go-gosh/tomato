@@ -3,6 +3,7 @@ package schema
 import (
 	"time"
 
+	"entgo.io/ent/schema/index"
 	"github.com/go-gosh/tomato/app/ent/mixin"
 
 	"entgo.io/ent"
@@ -46,5 +47,12 @@ func (UserTomato) Edges() []ent.Edge {
 			Field("user_id").
 			Required().
 			Unique(),
+	}
+}
+
+// Indexes of the UserTomato
+func (UserTomato) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id"),
 	}
 }
