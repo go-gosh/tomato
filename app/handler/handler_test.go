@@ -80,7 +80,7 @@ func (s _handlerTestSuite) testUserHasWorkingOnTomato() {
 func (s _handlerTestSuite) testStartTomato() {
 	w := httptest.NewRecorder()
 	var b bytes.Buffer
-	b.WriteString(`{"duration":60,"color":"red"}`)
+	b.WriteString(`{"duration":60,"color":"1"}`)
 	req, _ := http.NewRequest("POST", "/api/v1/tomato", &b)
 	resp := s.serveApi(w, req)
 	s.EqualValues(200, resp.Code)
