@@ -17,7 +17,7 @@ import (
 type App struct {
 }
 
-func New(path string) (*App, error) {
+func New() (*App, error) {
 	cf := config.LoadDefaultConfig()
 
 	db, err := ent.Open(cf.Database.Type, cf.Database.File)
