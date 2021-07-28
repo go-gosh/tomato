@@ -154,3 +154,6 @@ Temporary Items
 .apdisk
 .idea
 go.sum
+coverage.txt
+database.sqlite
+config/config.yaml

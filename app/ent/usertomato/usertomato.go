@@ -77,8 +77,8 @@ type Color string
 
 // Color values.
 const (
-	ColorRed   Color = "red"
-	ColorGreen Color = "green"
+	ColorRed   Color = "1"
+	ColorGreen Color = "2"
 )
 
 func (c Color) String() string {

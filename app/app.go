@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/go-gosh/tomato/app/config"
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/migrate"
 	"github.com/go-gosh/tomato/app/handler"
@@ -12,22 +12,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"gopkg.in/yaml.v3"
 )
 
 type App struct {
 }
 
-func New(path string) (*App, error) {
-	cb, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	cf := Config{}
-	err = yaml.NewDecoder(cb).Decode(&cf)
-	if err != nil {
-		return nil, err
-	}
+func New() (*App, error) {
+	cf := config.LoadDefaultConfig()
 
 	db, err := ent.Open(cf.Database.Type, cf.Database.File)
 	if err != nil {

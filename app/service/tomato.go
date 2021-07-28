@@ -84,3 +84,13 @@ func (s Service) CloseTomatoByUserId(ctx context.Context, userId int) error {
 		)).SetEndTime(time.Now()).
 		Exec(ctx)
 }
+
+// GiveUpTomatoByUserId give up all tomato clock by user id.
+func (s Service) GiveUpTomatoByUserId(ctx context.Context, userId int) error {
+	_, err := s.db.UserTomato.Delete().
+		Where(
+			usertomato.UserIDEQ(userId),
+			usertomato.EndTimeIsNil(),
+		).Exec(ctx)
+	return err
+}

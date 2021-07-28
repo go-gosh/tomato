@@ -184,6 +184,17 @@ func (v *ClockView) OnStart(ctx context.Context) error {
 	return nil
 }
 
+func (v *ClockView) OnGiveUp(ctx context.Context) error {
+	err := v.svc.GiveUpTomatoByUserId(ctx, 0)
+	if err != nil {
+		return err
+	}
+
+	v.SetTomato(nil)
+
+	return nil
+}
+
 func (v *ClockView) Run(ctx context.Context) {
 	err := v.OnInit(ctx)
 	if err != nil {
@@ -312,12 +323,38 @@ func (v *ClockView) Layout(ctx context.Context, c *container.Container) (err err
 			),
 		)
 	}
+	giveUpBtn, err := button.New("(p)ause", func() error {
+		// show ask dialog
+		v.formSD.Text.Reset()
+		err := v.formSD.Text.Write("确定放弃当前番茄记录吗？")
+		if err != nil {
+			return err
+		}
+		err = v.formSD.Layout(ctx, v.container)
+		if err != nil {
+			return err
+		}
+		// get user select option
+		result := <-v.formSD.Answer
+		if result {
+			// confirm give up tomato clock
+			err = v.OnGiveUp(ctx)
+			if err != nil {
+				return err
+			}
+		}
+		// re-layout view always
+		return v.Layout(ctx, v.container)
+	}, button.GlobalKey('p'))
+	if err != nil {
+		return err
+	}
 	return c.Update(rootContainerResourceId,
 		container.Border(linestyle.Light),
 		container.BorderTitle("PRESS Q TO QUIT"),
 		container.SplitHorizontal(
 			container.Top(container.PlaceWidget(v.clockSD)),
-			container.Bottom(),
+			container.Bottom(container.PlaceWidget(giveUpBtn)),
 		),
 	)
 }

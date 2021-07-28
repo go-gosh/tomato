@@ -3,6 +3,9 @@ package schema
 import (
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/index"
 	"github.com/go-gosh/tomato/app/ent/mixin"
 
 	"entgo.io/ent"
@@ -23,7 +26,11 @@ func (UserTomato) Fields() []ent.Field {
 			Immutable().
 			Default(time.Now),
 		field.Enum("color").
-			Values("red", "green"),
+			NamedValues("red", "1", "green", "2").
+			SchemaType(map[string]string{
+				dialect.MySQL:  "tinyint",
+				dialect.SQLite: "integer",
+			}),
 		field.Time("remain_time"),
 		field.Time("end_time").
 			Nillable().
@@ -44,7 +51,17 @@ func (UserTomato) Edges() []ent.Edge {
 		edge.From("users", User.Type).
 			Ref("user_tomatoes").
 			Field("user_id").
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}).
 			Required().
 			Unique(),
+	}
+}
+
+// Indexes of the UserTomato
+func (UserTomato) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id"),
 	}
 }

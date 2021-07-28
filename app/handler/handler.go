@@ -52,7 +52,7 @@ func (s Service) StartTomato(ctx *context.Context) error {
 		// Duration unit is second
 		Duration int `json:"duration" binding:"required,min=1"`
 		// Color signed tomato clock type
-		Color string `json:"color" binding:"required,oneof=red green"`
+		Color string `json:"color" binding:"required,oneof=1 2"`
 	}{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
