@@ -12,4 +12,7 @@ logger:
 database:
   type: sqlite3
   file: file:database.sqlite?cache=shared&_fk=1
+
+runtime:
+  default_user: admin
 `)

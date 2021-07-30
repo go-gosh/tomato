@@ -7,6 +7,8 @@ const (
 	Label = "user_config"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldRank holds the string denoting the rank field in the database.
 	FieldRank = "rank"
 	// FieldWorking holds the string denoting the working field in the database.
@@ -23,32 +25,22 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
 	// UsersColumn is the table column denoting the users relation/edge.
-	UsersColumn = "user_user_configs"
+	UsersColumn = "user_id"
 )
 
 // Columns holds all SQL columns for userconfig fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
 	FieldRank,
 	FieldWorking,
 	FieldBreak,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "user_configs"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_user_configs",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

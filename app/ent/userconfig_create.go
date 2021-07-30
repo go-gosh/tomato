@@ -20,6 +20,12 @@ type UserConfigCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (ucc *UserConfigCreate) SetUserID(i int) *UserConfigCreate {
+	ucc.mutation.SetUserID(i)
+	return ucc
+}
+
 // SetRank sets the "rank" field.
 func (ucc *UserConfigCreate) SetRank(u uint8) *UserConfigCreate {
 	ucc.mutation.SetRank(u)
@@ -27,13 +33,13 @@ func (ucc *UserConfigCreate) SetRank(u uint8) *UserConfigCreate {
 }
 
 // SetWorking sets the "working" field.
-func (ucc *UserConfigCreate) SetWorking(u uint8) *UserConfigCreate {
+func (ucc *UserConfigCreate) SetWorking(u uint) *UserConfigCreate {
 	ucc.mutation.SetWorking(u)
 	return ucc
 }
 
 // SetBreak sets the "break" field.
-func (ucc *UserConfigCreate) SetBreak(u uint8) *UserConfigCreate {
+func (ucc *UserConfigCreate) SetBreak(u uint) *UserConfigCreate {
 	ucc.mutation.SetBreak(u)
 	return ucc
 }
@@ -41,14 +47,6 @@ func (ucc *UserConfigCreate) SetBreak(u uint8) *UserConfigCreate {
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (ucc *UserConfigCreate) SetUsersID(id int) *UserConfigCreate {
 	ucc.mutation.SetUsersID(id)
-	return ucc
-}
-
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (ucc *UserConfigCreate) SetNillableUsersID(id *int) *UserConfigCreate {
-	if id != nil {
-		ucc = ucc.SetUsersID(*id)
-	}
 	return ucc
 }
 
@@ -127,6 +125,9 @@ func (ucc *UserConfigCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ucc *UserConfigCreate) check() error {
+	if _, ok := ucc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "user_id"`)}
+	}
 	if _, ok := ucc.mutation.Rank(); !ok {
 		return &ValidationError{Name: "rank", err: errors.New(`ent: missing required field "rank"`)}
 	}
@@ -135,6 +136,9 @@ func (ucc *UserConfigCreate) check() error {
 	}
 	if _, ok := ucc.mutation.Break(); !ok {
 		return &ValidationError{Name: "break", err: errors.New(`ent: missing required field "break"`)}
+	}
+	if _, ok := ucc.mutation.UsersID(); !ok {
+		return &ValidationError{Name: "users", err: errors.New("ent: missing required edge \"users\"")}
 	}
 	return nil
 }
@@ -173,7 +177,7 @@ func (ucc *UserConfigCreate) createSpec() (*UserConfig, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ucc.mutation.Working(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldWorking,
 		})
@@ -181,7 +185,7 @@ func (ucc *UserConfigCreate) createSpec() (*UserConfig, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ucc.mutation.Break(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldBreak,
 		})
@@ -204,7 +208,7 @@ func (ucc *UserConfigCreate) createSpec() (*UserConfig, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_user_configs = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

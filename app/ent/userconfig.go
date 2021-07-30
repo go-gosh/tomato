@@ -16,16 +16,17 @@ type UserConfig struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID int `json:"user_id,omitempty"`
 	// Rank holds the value of the "rank" field.
 	Rank uint8 `json:"rank,omitempty"`
 	// Working holds the value of the "working" field.
-	Working uint8 `json:"working,omitempty"`
+	Working uint `json:"working,omitempty"`
 	// Break holds the value of the "break" field.
-	Break uint8 `json:"break,omitempty"`
+	Break uint `json:"break,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserConfigQuery when eager-loading is set.
-	Edges             UserConfigEdges `json:"edges"`
-	user_user_configs *int
+	Edges UserConfigEdges `json:"edges"`
 }
 
 // UserConfigEdges holds the relations/edges for other nodes in the graph.
@@ -56,9 +57,7 @@ func (*UserConfig) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case userconfig.FieldID, userconfig.FieldRank, userconfig.FieldWorking, userconfig.FieldBreak:
-			values[i] = new(sql.NullInt64)
-		case userconfig.ForeignKeys[0]: // user_user_configs
+		case userconfig.FieldID, userconfig.FieldUserID, userconfig.FieldRank, userconfig.FieldWorking, userconfig.FieldBreak:
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type UserConfig", columns[i])
@@ -81,6 +80,12 @@ func (uc *UserConfig) assignValues(columns []string, values []interface{}) error
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			uc.ID = int(value.Int64)
+		case userconfig.FieldUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value.Valid {
+				uc.UserID = int(value.Int64)
+			}
 		case userconfig.FieldRank:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field rank", values[i])
@@ -91,20 +96,13 @@ func (uc *UserConfig) assignValues(columns []string, values []interface{}) error
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field working", values[i])
 			} else if value.Valid {
-				uc.Working = uint8(value.Int64)
+				uc.Working = uint(value.Int64)
 			}
 		case userconfig.FieldBreak:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field break", values[i])
 			} else if value.Valid {
-				uc.Break = uint8(value.Int64)
-			}
-		case userconfig.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_user_configs", value)
-			} else if value.Valid {
-				uc.user_user_configs = new(int)
-				*uc.user_user_configs = int(value.Int64)
+				uc.Break = uint(value.Int64)
 			}
 		}
 	}
@@ -139,6 +137,8 @@ func (uc *UserConfig) String() string {
 	var builder strings.Builder
 	builder.WriteString("UserConfig(")
 	builder.WriteString(fmt.Sprintf("id=%v", uc.ID))
+	builder.WriteString(", user_id=")
+	builder.WriteString(fmt.Sprintf("%v", uc.UserID))
 	builder.WriteString(", rank=")
 	builder.WriteString(fmt.Sprintf("%v", uc.Rank))
 	builder.WriteString(", working=")

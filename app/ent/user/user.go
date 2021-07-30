@@ -33,7 +33,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "userconfig" package.
 	UserConfigsInverseTable = "user_configs"
 	// UserConfigsColumn is the table column denoting the user_configs relation/edge.
-	UserConfigsColumn = "user_user_configs"
+	UserConfigsColumn = "user_id"
 	// UserTomatoesTable is the table that holds the user_tomatoes relation/edge.
 	UserTomatoesTable = "user_tomatos"
 	// UserTomatoesInverseTable is the table name for the UserTomato entity.

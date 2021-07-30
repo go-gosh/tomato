@@ -27,7 +27,6 @@ type UserConfigQuery struct {
 	predicates []predicate.UserConfig
 	// eager-loading edges.
 	withUsers *UserQuery
-	withFKs   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -291,12 +290,12 @@ func (ucq *UserConfigQuery) WithUsers(opts ...func(*UserQuery)) *UserConfigQuery
 // Example:
 //
 //	var v []struct {
-//		Rank uint8 `json:"rank,omitempty"`
+//		UserID int `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.UserConfig.Query().
-//		GroupBy(userconfig.FieldRank).
+//		GroupBy(userconfig.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -318,11 +317,11 @@ func (ucq *UserConfigQuery) GroupBy(field string, fields ...string) *UserConfigG
 // Example:
 //
 //	var v []struct {
-//		Rank uint8 `json:"rank,omitempty"`
+//		UserID int `json:"user_id,omitempty"`
 //	}
 //
 //	client.UserConfig.Query().
-//		Select(userconfig.FieldRank).
+//		Select(userconfig.FieldUserID).
 //		Scan(ctx, &v)
 //
 func (ucq *UserConfigQuery) Select(fields ...string) *UserConfigSelect {
@@ -349,18 +348,11 @@ func (ucq *UserConfigQuery) prepareQuery(ctx context.Context) error {
 func (ucq *UserConfigQuery) sqlAll(ctx context.Context) ([]*UserConfig, error) {
 	var (
 		nodes       = []*UserConfig{}
-		withFKs     = ucq.withFKs
 		_spec       = ucq.querySpec()
 		loadedTypes = [1]bool{
 			ucq.withUsers != nil,
 		}
 	)
-	if ucq.withUsers != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, userconfig.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &UserConfig{config: ucq.config}
 		nodes = append(nodes, node)
@@ -385,10 +377,7 @@ func (ucq *UserConfigQuery) sqlAll(ctx context.Context) ([]*UserConfig, error) {
 		ids := make([]int, 0, len(nodes))
 		nodeids := make(map[int][]*UserConfig)
 		for i := range nodes {
-			if nodes[i].user_user_configs == nil {
-				continue
-			}
-			fk := *nodes[i].user_user_configs
+			fk := nodes[i].UserID
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -402,7 +391,7 @@ func (ucq *UserConfigQuery) sqlAll(ctx context.Context) ([]*UserConfig, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_user_configs" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.Users = n

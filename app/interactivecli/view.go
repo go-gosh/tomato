@@ -25,12 +25,7 @@ import (
 
 const rootContainerResourceId = "root_container"
 
-const (
-	redDuration   = 25 * 60
-	greenDuration = 5 * 60
-)
-
-func NewClockView(svc *service.Service, c *container.Container) (*ClockView, error) {
+func NewClockView(svc *service.Service, c *container.Container, config *ent.UserConfig) (*ClockView, error) {
 	clockSD, err := segmentdisplay.New()
 	if err != nil {
 		return nil, err
@@ -45,8 +40,9 @@ func NewClockView(svc *service.Service, c *container.Container) (*ClockView, err
 		tomato:    nil,
 		alarmCh:   make(chan struct{}),
 		svc:       svc,
-		userId:    0,
+		userId:    config.UserID,
 		formSD:    f,
+		config:    config,
 	}, nil
 }
 
@@ -120,6 +116,7 @@ type ClockView struct {
 	svc       *service.Service
 	userId    int
 	formSD    *form
+	config    *ent.UserConfig
 }
 
 func (v *ClockView) Tomato() *ent.UserTomato {
@@ -142,7 +139,7 @@ func (v *ClockView) OnInit(ctx context.Context) error {
 }
 
 func (v *ClockView) OnSubmit(ctx context.Context) error {
-	err := v.svc.CloseTomatoByUserId(ctx, 0)
+	err := v.svc.CloseTomatoByUserId(ctx, v.userId)
 	if err != nil {
 		return err
 	}
@@ -152,9 +149,9 @@ func (v *ClockView) OnSubmit(ctx context.Context) error {
 	}
 
 	param := service.TomatoCreate{
-		Duration:  greenDuration,
+		Duration:  int(v.config.Break),
 		Color:     usertomato.ColorGreen,
-		UserId:    0,
+		UserId:    v.userId,
 		StartTime: time.Now(),
 	}
 	t, err := v.svc.CreateTomato(ctx, param)
@@ -169,9 +166,9 @@ func (v *ClockView) OnSubmit(ctx context.Context) error {
 
 func (v *ClockView) OnStart(ctx context.Context) error {
 	param := service.TomatoCreate{
-		Duration:  redDuration,
+		Duration:  int(v.config.Working),
 		Color:     usertomato.ColorRed,
-		UserId:    0,
+		UserId:    v.userId,
 		StartTime: time.Now(),
 	}
 	t, err := v.svc.CreateTomato(ctx, param)
@@ -185,7 +182,7 @@ func (v *ClockView) OnStart(ctx context.Context) error {
 }
 
 func (v *ClockView) OnGiveUp(ctx context.Context) error {
-	err := v.svc.GiveUpTomatoByUserId(ctx, 0)
+	err := v.svc.GiveUpTomatoByUserId(ctx, v.userId)
 	if err != nil {
 		return err
 	}
@@ -268,7 +265,7 @@ func (v *ClockView) OnUpdate(ctx context.Context) error {
 	result := <-v.formSD.Answer
 	if !result {
 		// just close working tomato
-		err := v.svc.CloseTomatoByUserId(ctx, 0)
+		err := v.svc.CloseTomatoByUserId(ctx, v.userId)
 		if err != nil {
 			return err
 		}
@@ -348,12 +345,13 @@ func (v *ClockView) Layout(ctx context.Context, c *container.Container) (err err
 }
 
 type MainView struct {
-	db  *ent.Client
-	svc *service.Service
+	db         *ent.Client
+	svc        *service.Service
+	userConfig *ent.UserConfig
 }
 
-func NewMainView(db *ent.Client, svc *service.Service) *MainView {
-	return &MainView{db: db, svc: svc}
+func NewMainView(db *ent.Client, svc *service.Service, userConfig *ent.UserConfig) *MainView {
+	return &MainView{db: db, svc: svc, userConfig: userConfig}
 }
 
 func (v MainView) Run() error {
@@ -374,7 +372,7 @@ func (v MainView) Run() error {
 	if err != nil {
 		return err
 	}
-	clock, err := NewClockView(v.svc, c)
+	clock, err := NewClockView(v.svc, c, v.userConfig)
 	if err != nil {
 		return err
 	}

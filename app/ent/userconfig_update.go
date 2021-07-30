@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -27,6 +28,12 @@ func (ucu *UserConfigUpdate) Where(ps ...predicate.UserConfig) *UserConfigUpdate
 	return ucu
 }
 
+// SetUserID sets the "user_id" field.
+func (ucu *UserConfigUpdate) SetUserID(i int) *UserConfigUpdate {
+	ucu.mutation.SetUserID(i)
+	return ucu
+}
+
 // SetRank sets the "rank" field.
 func (ucu *UserConfigUpdate) SetRank(u uint8) *UserConfigUpdate {
 	ucu.mutation.ResetRank()
@@ -41,27 +48,27 @@ func (ucu *UserConfigUpdate) AddRank(u uint8) *UserConfigUpdate {
 }
 
 // SetWorking sets the "working" field.
-func (ucu *UserConfigUpdate) SetWorking(u uint8) *UserConfigUpdate {
+func (ucu *UserConfigUpdate) SetWorking(u uint) *UserConfigUpdate {
 	ucu.mutation.ResetWorking()
 	ucu.mutation.SetWorking(u)
 	return ucu
 }
 
 // AddWorking adds u to the "working" field.
-func (ucu *UserConfigUpdate) AddWorking(u uint8) *UserConfigUpdate {
+func (ucu *UserConfigUpdate) AddWorking(u uint) *UserConfigUpdate {
 	ucu.mutation.AddWorking(u)
 	return ucu
 }
 
 // SetBreak sets the "break" field.
-func (ucu *UserConfigUpdate) SetBreak(u uint8) *UserConfigUpdate {
+func (ucu *UserConfigUpdate) SetBreak(u uint) *UserConfigUpdate {
 	ucu.mutation.ResetBreak()
 	ucu.mutation.SetBreak(u)
 	return ucu
 }
 
 // AddBreak adds u to the "break" field.
-func (ucu *UserConfigUpdate) AddBreak(u uint8) *UserConfigUpdate {
+func (ucu *UserConfigUpdate) AddBreak(u uint) *UserConfigUpdate {
 	ucu.mutation.AddBreak(u)
 	return ucu
 }
@@ -69,14 +76,6 @@ func (ucu *UserConfigUpdate) AddBreak(u uint8) *UserConfigUpdate {
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (ucu *UserConfigUpdate) SetUsersID(id int) *UserConfigUpdate {
 	ucu.mutation.SetUsersID(id)
-	return ucu
-}
-
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (ucu *UserConfigUpdate) SetNillableUsersID(id *int) *UserConfigUpdate {
-	if id != nil {
-		ucu = ucu.SetUsersID(*id)
-	}
 	return ucu
 }
 
@@ -103,12 +102,18 @@ func (ucu *UserConfigUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(ucu.hooks) == 0 {
+		if err = ucu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = ucu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserConfigMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = ucu.check(); err != nil {
+				return 0, err
 			}
 			ucu.mutation = mutation
 			affected, err = ucu.sqlSave(ctx)
@@ -150,6 +155,14 @@ func (ucu *UserConfigUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ucu *UserConfigUpdate) check() error {
+	if _, ok := ucu.mutation.UsersID(); ucu.mutation.UsersCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"users\"")
+	}
+	return nil
+}
+
 func (ucu *UserConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -184,28 +197,28 @@ func (ucu *UserConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ucu.mutation.Working(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldWorking,
 		})
 	}
 	if value, ok := ucu.mutation.AddedWorking(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldWorking,
 		})
 	}
 	if value, ok := ucu.mutation.Break(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldBreak,
 		})
 	}
 	if value, ok := ucu.mutation.AddedBreak(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldBreak,
 		})
@@ -264,6 +277,12 @@ type UserConfigUpdateOne struct {
 	mutation *UserConfigMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (ucuo *UserConfigUpdateOne) SetUserID(i int) *UserConfigUpdateOne {
+	ucuo.mutation.SetUserID(i)
+	return ucuo
+}
+
 // SetRank sets the "rank" field.
 func (ucuo *UserConfigUpdateOne) SetRank(u uint8) *UserConfigUpdateOne {
 	ucuo.mutation.ResetRank()
@@ -278,27 +297,27 @@ func (ucuo *UserConfigUpdateOne) AddRank(u uint8) *UserConfigUpdateOne {
 }
 
 // SetWorking sets the "working" field.
-func (ucuo *UserConfigUpdateOne) SetWorking(u uint8) *UserConfigUpdateOne {
+func (ucuo *UserConfigUpdateOne) SetWorking(u uint) *UserConfigUpdateOne {
 	ucuo.mutation.ResetWorking()
 	ucuo.mutation.SetWorking(u)
 	return ucuo
 }
 
 // AddWorking adds u to the "working" field.
-func (ucuo *UserConfigUpdateOne) AddWorking(u uint8) *UserConfigUpdateOne {
+func (ucuo *UserConfigUpdateOne) AddWorking(u uint) *UserConfigUpdateOne {
 	ucuo.mutation.AddWorking(u)
 	return ucuo
 }
 
 // SetBreak sets the "break" field.
-func (ucuo *UserConfigUpdateOne) SetBreak(u uint8) *UserConfigUpdateOne {
+func (ucuo *UserConfigUpdateOne) SetBreak(u uint) *UserConfigUpdateOne {
 	ucuo.mutation.ResetBreak()
 	ucuo.mutation.SetBreak(u)
 	return ucuo
 }
 
 // AddBreak adds u to the "break" field.
-func (ucuo *UserConfigUpdateOne) AddBreak(u uint8) *UserConfigUpdateOne {
+func (ucuo *UserConfigUpdateOne) AddBreak(u uint) *UserConfigUpdateOne {
 	ucuo.mutation.AddBreak(u)
 	return ucuo
 }
@@ -306,14 +325,6 @@ func (ucuo *UserConfigUpdateOne) AddBreak(u uint8) *UserConfigUpdateOne {
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (ucuo *UserConfigUpdateOne) SetUsersID(id int) *UserConfigUpdateOne {
 	ucuo.mutation.SetUsersID(id)
-	return ucuo
-}
-
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (ucuo *UserConfigUpdateOne) SetNillableUsersID(id *int) *UserConfigUpdateOne {
-	if id != nil {
-		ucuo = ucuo.SetUsersID(*id)
-	}
 	return ucuo
 }
 
@@ -347,12 +358,18 @@ func (ucuo *UserConfigUpdateOne) Save(ctx context.Context) (*UserConfig, error) 
 		node *UserConfig
 	)
 	if len(ucuo.hooks) == 0 {
+		if err = ucuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = ucuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserConfigMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = ucuo.check(); err != nil {
+				return nil, err
 			}
 			ucuo.mutation = mutation
 			node, err = ucuo.sqlSave(ctx)
@@ -392,6 +409,14 @@ func (ucuo *UserConfigUpdateOne) ExecX(ctx context.Context) {
 	if err := ucuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (ucuo *UserConfigUpdateOne) check() error {
+	if _, ok := ucuo.mutation.UsersID(); ucuo.mutation.UsersCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"users\"")
+	}
+	return nil
 }
 
 func (ucuo *UserConfigUpdateOne) sqlSave(ctx context.Context) (_node *UserConfig, err error) {
@@ -445,28 +470,28 @@ func (ucuo *UserConfigUpdateOne) sqlSave(ctx context.Context) (_node *UserConfig
 	}
 	if value, ok := ucuo.mutation.Working(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldWorking,
 		})
 	}
 	if value, ok := ucuo.mutation.AddedWorking(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldWorking,
 		})
 	}
 	if value, ok := ucuo.mutation.Break(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldBreak,
 		})
 	}
 	if value, ok := ucuo.mutation.AddedBreak(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint8,
+			Type:   field.TypeUint,
 			Value:  value,
 			Column: userconfig.FieldBreak,
 		})

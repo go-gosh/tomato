@@ -722,10 +722,10 @@ type UserConfigMutation struct {
 	id            *int
 	rank          *uint8
 	addrank       *uint8
-	working       *uint8
-	addworking    *uint8
-	_break        *uint8
-	add_break     *uint8
+	working       *uint
+	addworking    *uint
+	_break        *uint
+	add_break     *uint
 	clearedFields map[string]struct{}
 	users         *int
 	clearedusers  bool
@@ -813,6 +813,42 @@ func (m *UserConfigMutation) ID() (id int, exists bool) {
 	return *m.id, true
 }
 
+// SetUserID sets the "user_id" field.
+func (m *UserConfigMutation) SetUserID(i int) {
+	m.users = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *UserConfigMutation) UserID() (r int, exists bool) {
+	v := m.users
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the UserConfig entity.
+// If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserConfigMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *UserConfigMutation) ResetUserID() {
+	m.users = nil
+}
+
 // SetRank sets the "rank" field.
 func (m *UserConfigMutation) SetRank(u uint8) {
 	m.rank = &u
@@ -870,13 +906,13 @@ func (m *UserConfigMutation) ResetRank() {
 }
 
 // SetWorking sets the "working" field.
-func (m *UserConfigMutation) SetWorking(u uint8) {
+func (m *UserConfigMutation) SetWorking(u uint) {
 	m.working = &u
 	m.addworking = nil
 }
 
 // Working returns the value of the "working" field in the mutation.
-func (m *UserConfigMutation) Working() (r uint8, exists bool) {
+func (m *UserConfigMutation) Working() (r uint, exists bool) {
 	v := m.working
 	if v == nil {
 		return
@@ -887,7 +923,7 @@ func (m *UserConfigMutation) Working() (r uint8, exists bool) {
 // OldWorking returns the old "working" field's value of the UserConfig entity.
 // If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserConfigMutation) OldWorking(ctx context.Context) (v uint8, err error) {
+func (m *UserConfigMutation) OldWorking(ctx context.Context) (v uint, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldWorking is only allowed on UpdateOne operations")
 	}
@@ -902,7 +938,7 @@ func (m *UserConfigMutation) OldWorking(ctx context.Context) (v uint8, err error
 }
 
 // AddWorking adds u to the "working" field.
-func (m *UserConfigMutation) AddWorking(u uint8) {
+func (m *UserConfigMutation) AddWorking(u uint) {
 	if m.addworking != nil {
 		*m.addworking += u
 	} else {
@@ -911,7 +947,7 @@ func (m *UserConfigMutation) AddWorking(u uint8) {
 }
 
 // AddedWorking returns the value that was added to the "working" field in this mutation.
-func (m *UserConfigMutation) AddedWorking() (r uint8, exists bool) {
+func (m *UserConfigMutation) AddedWorking() (r uint, exists bool) {
 	v := m.addworking
 	if v == nil {
 		return
@@ -926,13 +962,13 @@ func (m *UserConfigMutation) ResetWorking() {
 }
 
 // SetBreak sets the "break" field.
-func (m *UserConfigMutation) SetBreak(u uint8) {
+func (m *UserConfigMutation) SetBreak(u uint) {
 	m._break = &u
 	m.add_break = nil
 }
 
 // Break returns the value of the "break" field in the mutation.
-func (m *UserConfigMutation) Break() (r uint8, exists bool) {
+func (m *UserConfigMutation) Break() (r uint, exists bool) {
 	v := m._break
 	if v == nil {
 		return
@@ -943,7 +979,7 @@ func (m *UserConfigMutation) Break() (r uint8, exists bool) {
 // OldBreak returns the old "break" field's value of the UserConfig entity.
 // If the UserConfig object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserConfigMutation) OldBreak(ctx context.Context) (v uint8, err error) {
+func (m *UserConfigMutation) OldBreak(ctx context.Context) (v uint, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldBreak is only allowed on UpdateOne operations")
 	}
@@ -958,7 +994,7 @@ func (m *UserConfigMutation) OldBreak(ctx context.Context) (v uint8, err error) 
 }
 
 // AddBreak adds u to the "break" field.
-func (m *UserConfigMutation) AddBreak(u uint8) {
+func (m *UserConfigMutation) AddBreak(u uint) {
 	if m.add_break != nil {
 		*m.add_break += u
 	} else {
@@ -967,7 +1003,7 @@ func (m *UserConfigMutation) AddBreak(u uint8) {
 }
 
 // AddedBreak returns the value that was added to the "break" field in this mutation.
-func (m *UserConfigMutation) AddedBreak() (r uint8, exists bool) {
+func (m *UserConfigMutation) AddedBreak() (r uint, exists bool) {
 	v := m.add_break
 	if v == nil {
 		return
@@ -1039,7 +1075,10 @@ func (m *UserConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserConfigMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.users != nil {
+		fields = append(fields, userconfig.FieldUserID)
+	}
 	if m.rank != nil {
 		fields = append(fields, userconfig.FieldRank)
 	}
@@ -1057,6 +1096,8 @@ func (m *UserConfigMutation) Fields() []string {
 // schema.
 func (m *UserConfigMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case userconfig.FieldUserID:
+		return m.UserID()
 	case userconfig.FieldRank:
 		return m.Rank()
 	case userconfig.FieldWorking:
@@ -1072,6 +1113,8 @@ func (m *UserConfigMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case userconfig.FieldUserID:
+		return m.OldUserID(ctx)
 	case userconfig.FieldRank:
 		return m.OldRank(ctx)
 	case userconfig.FieldWorking:
@@ -1087,6 +1130,13 @@ func (m *UserConfigMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *UserConfigMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case userconfig.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
 	case userconfig.FieldRank:
 		v, ok := value.(uint8)
 		if !ok {
@@ -1095,14 +1145,14 @@ func (m *UserConfigMutation) SetField(name string, value ent.Value) error {
 		m.SetRank(v)
 		return nil
 	case userconfig.FieldWorking:
-		v, ok := value.(uint8)
+		v, ok := value.(uint)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWorking(v)
 		return nil
 	case userconfig.FieldBreak:
-		v, ok := value.(uint8)
+		v, ok := value.(uint)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1156,14 +1206,14 @@ func (m *UserConfigMutation) AddField(name string, value ent.Value) error {
 		m.AddRank(v)
 		return nil
 	case userconfig.FieldWorking:
-		v, ok := value.(uint8)
+		v, ok := value.(uint)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddWorking(v)
 		return nil
 	case userconfig.FieldBreak:
-		v, ok := value.(uint8)
+		v, ok := value.(uint)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1196,6 +1246,9 @@ func (m *UserConfigMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserConfigMutation) ResetField(name string) error {
 	switch name {
+	case userconfig.FieldUserID:
+		m.ResetUserID()
+		return nil
 	case userconfig.FieldRank:
 		m.ResetRank()
 		return nil

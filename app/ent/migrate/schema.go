@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "username", Type: field.TypeString, Size: 32},
+		{Name: "username", Type: field.TypeString, Unique: true, Size: 32},
 		{Name: "password", Type: field.TypeString},
 		{Name: "enabled", Type: field.TypeBool},
 	}
@@ -27,9 +27,9 @@ var (
 	UserConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "rank", Type: field.TypeUint8},
-		{Name: "working", Type: field.TypeUint8},
-		{Name: "break", Type: field.TypeUint8},
-		{Name: "user_user_configs", Type: field.TypeInt, Nullable: true},
+		{Name: "working", Type: field.TypeUint},
+		{Name: "break", Type: field.TypeUint},
+		{Name: "user_id", Type: field.TypeInt, Nullable: true},
 	}
 	// UserConfigsTable holds the schema information for the "user_configs" table.
 	UserConfigsTable = &schema.Table{
@@ -42,6 +42,13 @@ var (
 				Columns:    []*schema.Column{UserConfigsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userconfig_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{UserConfigsColumns[4]},
 			},
 		},
 	}

@@ -91,6 +91,13 @@ func IDLTE(id int) predicate.UserConfig {
 	})
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v int) predicate.UserConfig {
+	return predicate.UserConfig(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUserID), v))
+	})
+}
+
 // Rank applies equality check predicate on the "rank" field. It's identical to RankEQ.
 func Rank(v uint8) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
@@ -99,16 +106,64 @@ func Rank(v uint8) predicate.UserConfig {
 }
 
 // Working applies equality check predicate on the "working" field. It's identical to WorkingEQ.
-func Working(v uint8) predicate.UserConfig {
+func Working(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldWorking), v))
 	})
 }
 
 // Break applies equality check predicate on the "break" field. It's identical to BreakEQ.
-func Break(v uint8) predicate.UserConfig {
+func Break(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBreak), v))
+	})
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v int) predicate.UserConfig {
+	return predicate.UserConfig(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUserID), v))
+	})
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v int) predicate.UserConfig {
+	return predicate.UserConfig(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUserID), v))
+	})
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...int) predicate.UserConfig {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserConfig(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldUserID), v...))
+	})
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...int) predicate.UserConfig {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.UserConfig(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldUserID), v...))
 	})
 }
 
@@ -189,21 +244,21 @@ func RankLTE(v uint8) predicate.UserConfig {
 }
 
 // WorkingEQ applies the EQ predicate on the "working" field.
-func WorkingEQ(v uint8) predicate.UserConfig {
+func WorkingEQ(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldWorking), v))
 	})
 }
 
 // WorkingNEQ applies the NEQ predicate on the "working" field.
-func WorkingNEQ(v uint8) predicate.UserConfig {
+func WorkingNEQ(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldWorking), v))
 	})
 }
 
 // WorkingIn applies the In predicate on the "working" field.
-func WorkingIn(vs ...uint8) predicate.UserConfig {
+func WorkingIn(vs ...uint) predicate.UserConfig {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -220,7 +275,7 @@ func WorkingIn(vs ...uint8) predicate.UserConfig {
 }
 
 // WorkingNotIn applies the NotIn predicate on the "working" field.
-func WorkingNotIn(vs ...uint8) predicate.UserConfig {
+func WorkingNotIn(vs ...uint) predicate.UserConfig {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -237,49 +292,49 @@ func WorkingNotIn(vs ...uint8) predicate.UserConfig {
 }
 
 // WorkingGT applies the GT predicate on the "working" field.
-func WorkingGT(v uint8) predicate.UserConfig {
+func WorkingGT(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldWorking), v))
 	})
 }
 
 // WorkingGTE applies the GTE predicate on the "working" field.
-func WorkingGTE(v uint8) predicate.UserConfig {
+func WorkingGTE(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldWorking), v))
 	})
 }
 
 // WorkingLT applies the LT predicate on the "working" field.
-func WorkingLT(v uint8) predicate.UserConfig {
+func WorkingLT(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldWorking), v))
 	})
 }
 
 // WorkingLTE applies the LTE predicate on the "working" field.
-func WorkingLTE(v uint8) predicate.UserConfig {
+func WorkingLTE(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldWorking), v))
 	})
 }
 
 // BreakEQ applies the EQ predicate on the "break" field.
-func BreakEQ(v uint8) predicate.UserConfig {
+func BreakEQ(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBreak), v))
 	})
 }
 
 // BreakNEQ applies the NEQ predicate on the "break" field.
-func BreakNEQ(v uint8) predicate.UserConfig {
+func BreakNEQ(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBreak), v))
 	})
 }
 
 // BreakIn applies the In predicate on the "break" field.
-func BreakIn(vs ...uint8) predicate.UserConfig {
+func BreakIn(vs ...uint) predicate.UserConfig {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -296,7 +351,7 @@ func BreakIn(vs ...uint8) predicate.UserConfig {
 }
 
 // BreakNotIn applies the NotIn predicate on the "break" field.
-func BreakNotIn(vs ...uint8) predicate.UserConfig {
+func BreakNotIn(vs ...uint) predicate.UserConfig {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -313,28 +368,28 @@ func BreakNotIn(vs ...uint8) predicate.UserConfig {
 }
 
 // BreakGT applies the GT predicate on the "break" field.
-func BreakGT(v uint8) predicate.UserConfig {
+func BreakGT(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBreak), v))
 	})
 }
 
 // BreakGTE applies the GTE predicate on the "break" field.
-func BreakGTE(v uint8) predicate.UserConfig {
+func BreakGTE(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBreak), v))
 	})
 }
 
 // BreakLT applies the LT predicate on the "break" field.
-func BreakLT(v uint8) predicate.UserConfig {
+func BreakLT(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBreak), v))
 	})
 }
 
 // BreakLTE applies the LTE predicate on the "break" field.
-func BreakLTE(v uint8) predicate.UserConfig {
+func BreakLTE(v uint) predicate.UserConfig {
 	return predicate.UserConfig(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBreak), v))
 	})

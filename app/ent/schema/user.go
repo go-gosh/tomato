@@ -18,7 +18,8 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").
 			MaxLen(32).
-			MinLen(3),
+			MinLen(3).
+			Unique(),
 		field.String("password").
 			Sensitive(),
 		field.Bool("enabled"),
