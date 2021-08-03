@@ -4,10 +4,12 @@ import (
 	"context"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/go-gosh/tomato/app/config"
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/migrate"
-	"github.com/go-gosh/tomato/app/interactivecli"
+	"github.com/go-gosh/tomato/app/minicli"
+	"github.com/go-gosh/tomato/app/minicli/adapter"
 	"github.com/go-gosh/tomato/app/service"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -30,9 +32,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	a := interactivecli.NewMainView(db, svc, userConfig)
-	err = a.Run()
+	a := minicli.NewModel(adapter.NewDataManager(svc, userConfig, context.Background()))
+	err = tea.NewProgram(a).Start()
 	if err != nil {
 		panic(err)
 	}
@@ -52,8 +53,8 @@ func initApp(svc *service.Service) (*ent.UserConfig, error) {
 				RedDuration   uint
 				GreedDuration uint
 			}{
-				RedDuration:   25,
-				GreedDuration: 5,
+				RedDuration:   25 * 60,
+				GreedDuration: 5 * 60,
 			},
 		}
 		user, err := svc.CreateUser(ctx, create)
