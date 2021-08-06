@@ -1,5 +1,6 @@
-//go:build !darwin
+//go:build !darwin && !windows
 // +build !darwin
+// +build !windows
 
 package adapter
 
