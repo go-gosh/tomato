@@ -11,7 +11,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.9.0
-	github.com/mum4k/termdash v0.16.0
 	github.com/stretchr/testify v1.7.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
