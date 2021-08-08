@@ -7,13 +7,15 @@ import (
 	"github.com/go-gosh/tomato/app/ent/user"
 )
 
+type UserConfigCreate struct {
+	RedDuration   uint
+	GreedDuration uint
+}
+
 type UserCreate struct {
 	Username string
 	Password string
-	Config   struct {
-		RedDuration   uint
-		GreedDuration uint
-	}
+	Config   UserConfigCreate
 }
 
 // CreateUser init user config and return it.
@@ -22,7 +24,7 @@ func (s Service) CreateUser(ctx context.Context, create UserCreate) (*ent.User, 
 	if err != nil {
 		return nil, err
 	}
-	us, err := s.db.User.Create().
+	us, err := tx.User.Create().
 		SetUsername(create.Username).
 		SetPassword(create.Password).
 		SetEnabled(true).
@@ -31,7 +33,7 @@ func (s Service) CreateUser(ctx context.Context, create UserCreate) (*ent.User, 
 		tx.Rollback()
 		return nil, err
 	}
-	_, err = tx.UserConfig.Create().
+	cf, err := tx.UserConfig.Create().
 		SetWorking(create.Config.RedDuration).
 		SetBreak(create.Config.GreedDuration).
 		SetRank(0).
@@ -47,6 +49,7 @@ func (s Service) CreateUser(ctx context.Context, create UserCreate) (*ent.User, 
 		return nil, err
 	}
 
+	us.Edges.UserConfigs = append(us.Edges.UserConfigs, cf)
 	return us, nil
 }
 
