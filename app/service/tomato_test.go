@@ -12,13 +12,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type _handlerTestSuite struct {
+type _tomatoServiceTestSuite struct {
 	suite.Suite
 	svc    *Service
 	userId int
 }
 
-func (s *_handlerTestSuite) SetupSuite() {
+func (s *_tomatoServiceTestSuite) SetupSuite() {
 	db, err := ent.Open("sqlite3", ":memory:?_fk=1")
 	s.Require().NoError(err)
 	db = db.Debug()
@@ -26,7 +26,7 @@ func (s *_handlerTestSuite) SetupSuite() {
 	s.svc = New(db)
 }
 
-func (s _handlerTestSuite) Test_NormalCase() {
+func (s _tomatoServiceTestSuite) Test_NormalCase() {
 	s.testUserNoWorkingOnTomato()
 	s.testStartTomato()
 	s.testUserHasWorkingOnTomato()
@@ -34,20 +34,20 @@ func (s _handlerTestSuite) Test_NormalCase() {
 	s.testUserNoWorkingOnTomato()
 }
 
-func (s _handlerTestSuite) testUserNoWorkingOnTomato() {
+func (s _tomatoServiceTestSuite) testUserNoWorkingOnTomato() {
 	tomato, err := s.svc.GetWorkingTomatoByUserId(s.getContext(), s.userId)
 	s.True(ent.IsNotFound(err))
 	s.Nil(tomato)
 }
 
-func (s _handlerTestSuite) testUserHasWorkingOnTomato() {
+func (s _tomatoServiceTestSuite) testUserHasWorkingOnTomato() {
 	tomato, err := s.svc.GetWorkingTomatoByUserId(s.getContext(), s.userId)
 	s.NoError(err)
 	s.NotNil(tomato)
 	s.NotEmpty(tomato.ID)
 }
 
-func (s _handlerTestSuite) testStartTomato() {
+func (s _tomatoServiceTestSuite) testStartTomato() {
 	param := TomatoCreate{
 		Duration:  60,
 		Color:     usertomato.ColorRed,
@@ -65,15 +65,15 @@ func (s _handlerTestSuite) testStartTomato() {
 	s.Nil(tomato.EndTime)
 }
 
-func (s _handlerTestSuite) testCloseTomato() {
+func (s _tomatoServiceTestSuite) testCloseTomato() {
 	err := s.svc.CloseTomatoByUserId(s.getContext(), s.userId)
 	s.NoError(err)
 }
 
-func (s *_handlerTestSuite) getContext() context.Context {
+func (s *_tomatoServiceTestSuite) getContext() context.Context {
 	return context.TODO()
 }
 
-func TestService(t *testing.T) {
-	suite.Run(t, &_handlerTestSuite{})
+func TestTomatoService(t *testing.T) {
+	suite.Run(t, &_tomatoServiceTestSuite{})
 }

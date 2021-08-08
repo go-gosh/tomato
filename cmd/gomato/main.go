@@ -49,10 +49,7 @@ func initApp(svc *service.Service) (*ent.UserConfig, error) {
 		create := service.UserCreate{
 			Username: cf.Runtime.DefaultUser,
 			Password: "",
-			Config: struct {
-				RedDuration   uint
-				GreedDuration uint
-			}{
+			Config: service.UserConfigCreate{
 				RedDuration:   25 * 60,
 				GreedDuration: 5 * 60,
 			},
