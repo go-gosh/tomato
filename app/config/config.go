@@ -3,10 +3,15 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"gopkg.in/yaml.v3"
 )
+
+// RootPathMark this char represent executable dir
+const RootPathMark = "$(root)"
 
 var (
 	_defaultConfig Config
@@ -32,12 +37,18 @@ type Config struct {
 
 func LoadDefaultConfig() Config {
 	_once.Do(func() {
-		fp, err := ioutil.ReadFile("./config.yaml")
+		ex, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		appRoot := filepath.Dir(ex)
+		configPath := filepath.Join(appRoot, "config.yaml")
+		fp, err := ioutil.ReadFile(configPath)
 		if err != nil && !os.IsNotExist(err) {
 			panic(err)
 		}
 		if os.IsNotExist(err) {
-			err := ioutil.WriteFile("config.yaml", defaultConfigSource, 0644)
+			err := ioutil.WriteFile(configPath, defaultConfigSource, 0644)
 			if err != nil {
 				panic(err)
 			}
@@ -50,6 +61,7 @@ func LoadDefaultConfig() Config {
 		if err != nil {
 			panic(err)
 		}
+		_defaultConfig.Database.File = strings.ReplaceAll(_defaultConfig.Database.File, RootPathMark, appRoot)
 	})
 
 	return _defaultConfig

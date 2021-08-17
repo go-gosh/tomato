@@ -58,11 +58,11 @@ func initApp(svc *service.Service) (*ent.UserConfig, error) {
 		if err != nil {
 			return nil, err
 		}
-		return user.QueryUserConfigs().First(ctx)
+		return user.Edges.UserConfigs[0], nil
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	return user.QueryUserConfigs().First(ctx)
+	return user.Edges.UserConfigs[0], nil
 }
