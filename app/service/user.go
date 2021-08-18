@@ -58,5 +58,5 @@ func (s Service) CreateUser(ctx context.Context, create UserCreate) (*ent.User, 
 func (s Service) GetUserByUsername(ctx context.Context, username string) (*ent.User, error) {
 	return s.db.User.Query().Where(
 		user.UsernameEQ(username),
-	).Only(ctx)
+	).WithUserConfigs().Only(ctx)
 }
