@@ -12,7 +12,7 @@ endif
 run: clear_output mkdir_package gen_model test build
 	clear && ./output/bin/gomato_$(detected_OS)$(ext)
 
-test:
+test: mkdir_package
 	go test -v ./...
 	go test -race -coverprofile=output/coverage.txt -covermode=atomic ./...
 
