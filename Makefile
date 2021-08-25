@@ -46,4 +46,7 @@ install:
 gen_model:
 	go generate app/ent/generate.go
 
-gen: gen_model gen_changelog
+gen_config_embed:
+	go generate app/config
+
+gen: gen_model gen_config_embed
