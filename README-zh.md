@@ -1,4 +1,6 @@
-# Tomato [![Build Status](https://travis-ci.com/go-gosh/tomato.svg?branch=main)](https://travis-ci.com/go-gosh/tomato) [![codecov](https://codecov.io/gh/go-gosh/tomato/branch/main/graph/badge.svg?token=E95nOwSpCL)](https://codecov.io/gh/go-gosh/tomato)
+# Tomato: 一个番茄工作法的小工具
+
+[![Build Status](https://travis-ci.com/go-gosh/tomato.svg?branch=main)](https://travis-ci.com/go-gosh/tomato) [![codecov](https://codecov.io/gh/go-gosh/tomato/branch/main/graph/badge.svg?token=E95nOwSpCL)](https://codecov.io/gh/go-gosh/tomato)
 
 [English](README.md) | [中文](README-zh.md)
 
@@ -18,9 +20,13 @@ $ go get github.com/go-gosh/tomato/cmd/gomato
 
 ### 使用说明
 
+执行以下命令开始使用:
+
 ```sh
-$ $GO_ROOT/bin/gomato
+$ gomato
 ```
+
+请确保 `$GOPATH/bin` 被加入到 $PATH 当中。
 
 ## 维护者
 
@@ -28,7 +34,7 @@ $ $GO_ROOT/bin/gomato
 
 ## 如何贡献
 
-非常欢迎你的加入！[提一个 Issue](https://github.com/RichardLitt/standard-readme/issues/new) 或者提交一个 Pull Request。
+非常欢迎你的加入！[提一个 Issue](https://github.com/go-gosh/tomato/issues/new) 或者提交一个 Pull Request。
 
 
 标准 Readme 遵循 [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) 行为规范。

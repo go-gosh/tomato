@@ -1,4 +1,6 @@
-# Tomato [![Build Status](https://travis-ci.com/go-gosh/tomato.svg?branch=main)](https://travis-ci.com/go-gosh/tomato) [![codecov](https://codecov.io/gh/go-gosh/tomato/branch/main/graph/badge.svg?token=E95nOwSpCL)](https://codecov.io/gh/go-gosh/tomato)
+# Tomato: A pomodoro technique gadget
+
+[![Build Status](https://travis-ci.com/go-gosh/tomato.svg?branch=main)](https://travis-ci.com/go-gosh/tomato) [![codecov](https://codecov.io/gh/go-gosh/tomato/branch/main/graph/badge.svg?token=E95nOwSpCL)](https://codecov.io/gh/go-gosh/tomato)
 
 [English](README.md) | [中文](README-zh.md)
 
@@ -18,9 +20,13 @@ Or You can also find the compiled binary at [Release](https://github.com/go-gosh
 
 ## Usage
 
+Use `Tomato` by running:
+
 ```sh
-$ $GO_ROOT/bin/gomato
+$ gomato
 ```
+
+and ensuring that `$GOPATH/bin` is added to your $PATH.
 
 ## Maintainers
 
@@ -28,7 +34,7 @@ $ $GO_ROOT/bin/gomato
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/RichardLitt/standard-readme/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/go-gosh/tomato/issues/new) or submit PRs.
 
 Standard Readme follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
