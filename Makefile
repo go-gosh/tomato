@@ -1,4 +1,5 @@
 package_dir=./output/pkg
+latest_version=$(shell sh -c 'git describe --abbrev=0 --tags' | tr '-' '_')
 
 # get os name
 ifeq ($(OS),Windows_NT)
@@ -22,20 +23,20 @@ clear_output:
 mkdir_package:
 	if [ ! -d $(package_dir) ]; then mkdir -p $(package_dir) && echo created package_dir: "$(package_dir)"; fi
 
-build:
+build: gen
 	go build -o ./output/bin/gomato_$(detected_OS)$(ext) ./cmd/gomato
 
 build_darwin:
 	GOOS=darwin GOARCH=amd64 go build -o output/bin/gomato_darwin ./cmd/gomato
 
 package_darwin: build_darwin mkdir_package
-	tar -czvf ./output/pkg/gomato_darwin_v2_0_0.tar.gz ./output/bin/gomato_darwin
+	tar -czvf ./output/pkg/gomato_darwin_$(latest_version).tar.gz ./output/bin/gomato_darwin
 
 build_windows:
 	GOOS=windows GOARCH=amd64 go build -o output/bin/gomato_windows.exe ./cmd/gomato
 
 package_windows: build_windows mkdir_package
-	zip -r ./output/pkg/gomato_windows_v2_0_0.zip ./output/bin/gomato_windows.exe
+	zip -r ./output/pkg/gomato_windows_$(latest_version).zip ./output/bin/gomato_windows.exe
 
 gen_changelog:
 	conventional-changelog -p angular -i CHANGELOG.md -s
