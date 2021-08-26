@@ -45,9 +45,6 @@ package_windows: build_windows mkdir_package
 gen_changelog:
 	conventional-changelog -p angular -i CHANGELOG.md -s
 
-install:
-	yarn global add conventional-changelog-cli # changelog cli
-
 gen_model:
 	go generate app/ent/generate.go
 
