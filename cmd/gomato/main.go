@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/go-gosh/tomato"
 	"github.com/go-gosh/tomato/app/config"
 	"github.com/go-gosh/tomato/app/ent"
 	"github.com/go-gosh/tomato/app/ent/migrate"
@@ -15,6 +18,12 @@ import (
 )
 
 func main() {
+	args := os.Args
+	if len(args) > 1 && (args[1] == "--version" || args[1] == "-v") {
+		fmt.Println(tomato.VersionTag)
+		return
+	}
+
 	cf := config.LoadDefaultConfig()
 
 	db, err := ent.Open(cf.Database.Type, cf.Database.File)
