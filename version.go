@@ -1,5 +1,7 @@
 package tomato
 
 const (
-	VersionTag = "v0.0.2-rc.3"
+	// VersionTag is application version
+	// github workflow will create a tag by this.
+	VersionTag = "v0.0.2"
 )
