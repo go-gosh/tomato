@@ -140,7 +140,11 @@ func (m model) startTomatoView() string {
 	if diff <= 0 {
 		diff = 0
 	}
-	return fmt.Sprintf("%s / %s", colorFg(fmt.Sprintf("%02d:%02d", diff/60, diff%60), "79"), fmt.Sprintf("%02d:%02d", m.data.Duration/60, m.data.Duration%60))
+	s := "Working: "
+	if m.data.Color == "1" {
+		s = "Take a break: "
+	}
+	return fmt.Sprintf("%s%s / %s", s, colorFg(fmt.Sprintf("%02d:%02d", diff/60, diff%60), "79"), fmt.Sprintf("%02d:%02d", m.data.Duration/60, m.data.Duration%60))
 }
 
 func (m model) updateHomePage(msg tea.Msg) (model, tea.Cmd) {
@@ -179,7 +183,13 @@ func (m model) updateClock(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) viewConfirmGiveUp() string {
-	return "Give up this tomato clock?\n\nPress " +
+	var s string
+	if m.data.Color == "1" {
+		s = colorFg(" working ", "205")
+	} else {
+		s = colorFg(" breaking ", "79")
+	}
+	return "Give up this" + s + "tomato clock?\n\nPress " +
 		colorFg("Y for yes, N or any for no    ", "79") + m.spinner.View()
 }
 
@@ -232,7 +242,13 @@ func (m model) updateSubmit(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) viewSubmit() string {
-	return "You are completed a tomato, for more?\n\nPress " +
+	var s string
+	if m.data.Color == "1" {
+		s = colorFg(" working ", "205")
+	} else {
+		s = colorFg(" breaking ", "79")
+	}
+	return "You are completed a" + s + "tomato, for more?\n\nPress " +
 		colorFg("Y for yes, N for no    ", "79") + m.spinner.View()
 }
 
