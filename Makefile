@@ -14,8 +14,7 @@ run: clear_output mkdir_package gen_model test build
 	clear && ./output/bin/gomato_$(detected_OS)$(ext)
 
 install:
-	go install ./cmd/gomato && \
-	gomato --version
+	go install ./cmd/gomato
 
 test: mkdir_package
 	go test -v ./...
