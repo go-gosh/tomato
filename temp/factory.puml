@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/class-diagram
+class Config
+
+interface SearchAppFactory {
++ createLoader() Loader
++ createSearchRule() SearchRule
++ createResult() Result
+}
+SearchAppFactory *--> Loader
+SearchAppFactory *--> SearchRule
+SearchAppFactory *--> Result
+
+interface Loader{
++ data(config Config) []string
+}
+abstract class AbstractLoader implements Loader
+class CICaseWebLoader extends AbstractLoader
+class CILinuxIPWebLoader extends AbstractLoader
+CILinuxIPWebLoader *--> CICaseWebLoader
+
+interface SearchRule {
++ search(msg string) []string
+}
+abstract class AbstractSearchRule implements SearchRule
+class RegexSearchRule extends AbstractSearchRule
+class CompareLogSearchRule extends AbstractSearchRule
+
+
+interface Result{
++ write(path string, result [][]string)
+}
+abstract class AbstractResult implements Result
+class XlsxResult extends AbstractResult
+
+abstract class AbstractSearchAppFactory implements SearchAppFactory
+class CaseSearchAppFactory extends AbstractSearchAppFactory
+CaseSearchAppFactory *-- CICaseWebLoader
+CaseSearchAppFactory *-- RegexSearchRule
+CaseSearchAppFactory *-- XlsxResult
+
+class CompareLogSearchAppFactory extends AbstractSearchAppFactory
+CompareLogSearchAppFactory *-- CILinuxIPWebLoader
+CompareLogSearchAppFactory *-- CompareLogSearchRule
+CompareLogSearchAppFactory *-- XlsxResult
+
+@enduml
