@@ -1,6 +1,6 @@
 module github.com/go-gosh/tomato
 
-go 1.16
+go 1.18
 
 require (
 	entgo.io/ent v0.9.0
