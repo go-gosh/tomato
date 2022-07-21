@@ -21,9 +21,9 @@ func (Task) Fields() []ent.Field {
 		field.Int8("star"),
 		field.String("content").MaxLen(255),
 		field.Time("join_time").Default(time.Now),
-		field.Time("start_time").Nillable().Default(time.Now),
-		field.Time("end_time").Nillable(),
-		field.Time("deadline").Nillable(),
+		field.Time("start_time").Nillable().Default(time.Now).Optional(),
+		field.Time("end_time").Nillable().Optional(),
+		field.Time("deadline").Nillable().Optional(),
 	}
 }
 
