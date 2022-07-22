@@ -37,3 +37,14 @@ func (s Service) CreateTask(ctx context.Context, task TaskCreate) (*ent.Task, er
 
 	return t, nil
 }
+
+// ListTask list task
+func (s Service) ListTask(ctx context.Context) ([]*ent.Task, error) {
+	tasks, err := s.db.Task.Query().
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+}
