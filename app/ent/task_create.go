@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/task"
 )
 
@@ -126,6 +127,21 @@ func (tc *TaskCreate) SetNillableDeadline(t *time.Time) *TaskCreate {
 		tc.SetDeadline(*t)
 	}
 	return tc
+}
+
+// AddCheckpointIDs adds the "checkpoints" edge to the Checkpoint entity by IDs.
+func (tc *TaskCreate) AddCheckpointIDs(ids ...int) *TaskCreate {
+	tc.mutation.AddCheckpointIDs(ids...)
+	return tc
+}
+
+// AddCheckpoints adds the "checkpoints" edges to the Checkpoint entity.
+func (tc *TaskCreate) AddCheckpoints(c ...*Checkpoint) *TaskCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return tc.AddCheckpointIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -367,6 +383,25 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			Column: task.FieldDeadline,
 		})
 		_node.Deadline = &value
+	}
+	if nodes := tc.mutation.CheckpointsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

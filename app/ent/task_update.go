@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/predicate"
 	"github.com/go-gosh/tomato/app/ent/task"
 )
@@ -139,9 +140,45 @@ func (tu *TaskUpdate) ClearDeadline() *TaskUpdate {
 	return tu
 }
 
+// AddCheckpointIDs adds the "checkpoints" edge to the Checkpoint entity by IDs.
+func (tu *TaskUpdate) AddCheckpointIDs(ids ...int) *TaskUpdate {
+	tu.mutation.AddCheckpointIDs(ids...)
+	return tu
+}
+
+// AddCheckpoints adds the "checkpoints" edges to the Checkpoint entity.
+func (tu *TaskUpdate) AddCheckpoints(c ...*Checkpoint) *TaskUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return tu.AddCheckpointIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tu *TaskUpdate) Mutation() *TaskMutation {
 	return tu.mutation
+}
+
+// ClearCheckpoints clears all "checkpoints" edges to the Checkpoint entity.
+func (tu *TaskUpdate) ClearCheckpoints() *TaskUpdate {
+	tu.mutation.ClearCheckpoints()
+	return tu
+}
+
+// RemoveCheckpointIDs removes the "checkpoints" edge to Checkpoint entities by IDs.
+func (tu *TaskUpdate) RemoveCheckpointIDs(ids ...int) *TaskUpdate {
+	tu.mutation.RemoveCheckpointIDs(ids...)
+	return tu
+}
+
+// RemoveCheckpoints removes "checkpoints" edges to Checkpoint entities.
+func (tu *TaskUpdate) RemoveCheckpoints(c ...*Checkpoint) *TaskUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return tu.RemoveCheckpointIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -339,6 +376,60 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: task.FieldDeadline,
 		})
 	}
+	if tu.mutation.CheckpointsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedCheckpointsIDs(); len(nodes) > 0 && !tu.mutation.CheckpointsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.CheckpointsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{task.Label}
@@ -469,9 +560,45 @@ func (tuo *TaskUpdateOne) ClearDeadline() *TaskUpdateOne {
 	return tuo
 }
 
+// AddCheckpointIDs adds the "checkpoints" edge to the Checkpoint entity by IDs.
+func (tuo *TaskUpdateOne) AddCheckpointIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.AddCheckpointIDs(ids...)
+	return tuo
+}
+
+// AddCheckpoints adds the "checkpoints" edges to the Checkpoint entity.
+func (tuo *TaskUpdateOne) AddCheckpoints(c ...*Checkpoint) *TaskUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return tuo.AddCheckpointIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 	return tuo.mutation
+}
+
+// ClearCheckpoints clears all "checkpoints" edges to the Checkpoint entity.
+func (tuo *TaskUpdateOne) ClearCheckpoints() *TaskUpdateOne {
+	tuo.mutation.ClearCheckpoints()
+	return tuo
+}
+
+// RemoveCheckpointIDs removes the "checkpoints" edge to Checkpoint entities by IDs.
+func (tuo *TaskUpdateOne) RemoveCheckpointIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.RemoveCheckpointIDs(ids...)
+	return tuo
+}
+
+// RemoveCheckpoints removes "checkpoints" edges to Checkpoint entities.
+func (tuo *TaskUpdateOne) RemoveCheckpoints(c ...*Checkpoint) *TaskUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return tuo.RemoveCheckpointIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -698,6 +825,60 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Type:   field.TypeTime,
 			Column: task.FieldDeadline,
 		})
+	}
+	if tuo.mutation.CheckpointsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedCheckpointsIDs(); len(nodes) > 0 && !tuo.mutation.CheckpointsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.CheckpointsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.CheckpointsTable,
+			Columns: []string{task.CheckpointsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: checkpoint.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Task{config: tuo.config}
 	_spec.Assign = _node.assignValues

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/go-gosh/tomato/app/ent/predicate"
 )
 
@@ -1054,6 +1055,34 @@ func DeadlineIsNil() predicate.Task {
 func DeadlineNotNil() predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		s.Where(sql.NotNull(s.C(FieldDeadline)))
+	})
+}
+
+// HasCheckpoints applies the HasEdge predicate on the "checkpoints" edge.
+func HasCheckpoints() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CheckpointsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CheckpointsTable, CheckpointsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCheckpointsWith applies the HasEdge predicate on the "checkpoints" edge with a given conditions (other predicates).
+func HasCheckpointsWith(preds ...predicate.Checkpoint) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CheckpointsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CheckpointsTable, CheckpointsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

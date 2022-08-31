@@ -8,6 +8,29 @@ import (
 )
 
 var (
+	// CheckpointsColumns holds the columns for the "checkpoints" table.
+	CheckpointsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "point", Type: field.TypeUint8},
+		{Name: "content", Type: field.TypeString, Size: 64},
+		{Name: "detail", Type: field.TypeString, Size: 255},
+		{Name: "check_time", Type: field.TypeTime},
+		{Name: "task_checkpoints", Type: field.TypeInt, Nullable: true},
+	}
+	// CheckpointsTable holds the schema information for the "checkpoints" table.
+	CheckpointsTable = &schema.Table{
+		Name:       "checkpoints",
+		Columns:    CheckpointsColumns,
+		PrimaryKey: []*schema.Column{CheckpointsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "checkpoints_tasks_checkpoints",
+				Columns:    []*schema.Column{CheckpointsColumns[5]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -106,6 +129,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CheckpointsTable,
 		TasksTable,
 		UsersTable,
 		UserConfigsTable,
@@ -114,6 +138,7 @@ var (
 )
 
 func init() {
+	CheckpointsTable.ForeignKeys[0].RefTable = TasksTable
 	UserConfigsTable.ForeignKeys[0].RefTable = UsersTable
 	UserTomatosTable.ForeignKeys[0].RefTable = UsersTable
 }

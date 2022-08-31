@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/task"
 	"github.com/go-gosh/tomato/app/ent/user"
 	"github.com/go-gosh/tomato/app/ent/userconfig"
@@ -34,6 +35,7 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		checkpoint.Table: checkpoint.ValidColumn,
 		task.Table:       task.ValidColumn,
 		user.Table:       user.ValidColumn,
 		userconfig.Table: userconfig.ValidColumn,

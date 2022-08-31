@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Checkpoint is the predicate function for checkpoint builders.
+type Checkpoint func(*sql.Selector)
+
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)
 

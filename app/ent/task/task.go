@@ -31,8 +31,17 @@ const (
 	FieldEndTime = "end_time"
 	// FieldDeadline holds the string denoting the deadline field in the database.
 	FieldDeadline = "deadline"
+	// EdgeCheckpoints holds the string denoting the checkpoints edge name in mutations.
+	EdgeCheckpoints = "checkpoints"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
+	// CheckpointsTable is the table that holds the checkpoints relation/edge.
+	CheckpointsTable = "checkpoints"
+	// CheckpointsInverseTable is the table name for the Checkpoint entity.
+	// It exists in this package in order to avoid circular dependency with the "checkpoint" package.
+	CheckpointsInverseTable = "checkpoints"
+	// CheckpointsColumn is the table column denoting the checkpoints relation/edge.
+	CheckpointsColumn = "task_checkpoints"
 )
 
 // Columns holds all SQL columns for task fields.

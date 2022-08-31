@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/schema"
 	"github.com/go-gosh/tomato/app/ent/task"
 	"github.com/go-gosh/tomato/app/ent/user"
@@ -15,6 +16,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	checkpointFields := schema.Checkpoint{}.Fields()
+	_ = checkpointFields
+	// checkpointDescContent is the schema descriptor for content field.
+	checkpointDescContent := checkpointFields[1].Descriptor()
+	// checkpoint.ContentValidator is a validator for the "content" field. It is called by the builders before save.
+	checkpoint.ContentValidator = checkpointDescContent.Validators[0].(func(string) error)
+	// checkpointDescDetail is the schema descriptor for detail field.
+	checkpointDescDetail := checkpointFields[2].Descriptor()
+	// checkpoint.DetailValidator is a validator for the "detail" field. It is called by the builders before save.
+	checkpoint.DetailValidator = checkpointDescDetail.Validators[0].(func(string) error)
+	// checkpointDescCheckTime is the schema descriptor for check_time field.
+	checkpointDescCheckTime := checkpointFields[3].Descriptor()
+	// checkpoint.DefaultCheckTime holds the default value on creation for the check_time field.
+	checkpoint.DefaultCheckTime = checkpointDescCheckTime.Default.(func() time.Time)
 	taskMixin := schema.Task{}.Mixin()
 	taskMixinFields0 := taskMixin[0].Fields()
 	_ = taskMixinFields0

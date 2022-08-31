@@ -4,12 +4,14 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/predicate"
 	"github.com/go-gosh/tomato/app/ent/task"
 )
@@ -23,6 +25,8 @@ type TaskQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Task
+	// eager-loading edges.
+	withCheckpoints *CheckpointQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +61,28 @@ func (tq *TaskQuery) Unique(unique bool) *TaskQuery {
 func (tq *TaskQuery) Order(o ...OrderFunc) *TaskQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryCheckpoints chains the current query on the "checkpoints" edge.
+func (tq *TaskQuery) QueryCheckpoints() *CheckpointQuery {
+	query := &CheckpointQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(checkpoint.Table, checkpoint.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.CheckpointsTable, task.CheckpointsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Task entity from the query.
@@ -235,16 +261,28 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:     tq.config,
-		limit:      tq.limit,
-		offset:     tq.offset,
-		order:      append([]OrderFunc{}, tq.order...),
-		predicates: append([]predicate.Task{}, tq.predicates...),
+		config:          tq.config,
+		limit:           tq.limit,
+		offset:          tq.offset,
+		order:           append([]OrderFunc{}, tq.order...),
+		predicates:      append([]predicate.Task{}, tq.predicates...),
+		withCheckpoints: tq.withCheckpoints.Clone(),
 		// clone intermediate query.
 		sql:    tq.sql.Clone(),
 		path:   tq.path,
 		unique: tq.unique,
 	}
+}
+
+// WithCheckpoints tells the query-builder to eager-load the nodes that are connected to
+// the "checkpoints" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithCheckpoints(opts ...func(*CheckpointQuery)) *TaskQuery {
+	query := &CheckpointQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withCheckpoints = query
+	return tq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -315,8 +353,11 @@ func (tq *TaskQuery) prepareQuery(ctx context.Context) error {
 
 func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, error) {
 	var (
-		nodes = []*Task{}
-		_spec = tq.querySpec()
+		nodes       = []*Task{}
+		_spec       = tq.querySpec()
+		loadedTypes = [1]bool{
+			tq.withCheckpoints != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*Task).scanValues(nil, columns)
@@ -324,6 +365,7 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &Task{config: tq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -335,6 +377,36 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := tq.withCheckpoints; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Task)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Checkpoints = []*Checkpoint{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Checkpoint(func(s *sql.Selector) {
+			s.Where(sql.InValues(task.CheckpointsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.task_checkpoints
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "task_checkpoints" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "task_checkpoints" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Checkpoints = append(node.Edges.Checkpoints, n)
+		}
+	}
+
 	return nodes, nil
 }
 

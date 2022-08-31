@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-gosh/tomato/app/ent/migrate"
 
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/task"
 	"github.com/go-gosh/tomato/app/ent/user"
 	"github.com/go-gosh/tomato/app/ent/userconfig"
@@ -24,6 +25,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Checkpoint is the client for interacting with the Checkpoint builders.
+	Checkpoint *CheckpointClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// User is the client for interacting with the User builders.
@@ -45,6 +48,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Checkpoint = NewCheckpointClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserConfig = NewUserConfigClient(c.config)
@@ -82,6 +86,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Checkpoint: NewCheckpointClient(cfg),
 		Task:       NewTaskClient(cfg),
 		User:       NewUserClient(cfg),
 		UserConfig: NewUserConfigClient(cfg),
@@ -105,6 +110,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Checkpoint: NewCheckpointClient(cfg),
 		Task:       NewTaskClient(cfg),
 		User:       NewUserClient(cfg),
 		UserConfig: NewUserConfigClient(cfg),
@@ -115,7 +121,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Task.
+//		Checkpoint.
 //		Query().
 //		Count(ctx)
 //
@@ -138,10 +144,117 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Checkpoint.Use(hooks...)
 	c.Task.Use(hooks...)
 	c.User.Use(hooks...)
 	c.UserConfig.Use(hooks...)
 	c.UserTomato.Use(hooks...)
+}
+
+// CheckpointClient is a client for the Checkpoint schema.
+type CheckpointClient struct {
+	config
+}
+
+// NewCheckpointClient returns a client for the Checkpoint from the given config.
+func NewCheckpointClient(c config) *CheckpointClient {
+	return &CheckpointClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `checkpoint.Hooks(f(g(h())))`.
+func (c *CheckpointClient) Use(hooks ...Hook) {
+	c.hooks.Checkpoint = append(c.hooks.Checkpoint, hooks...)
+}
+
+// Create returns a builder for creating a Checkpoint entity.
+func (c *CheckpointClient) Create() *CheckpointCreate {
+	mutation := newCheckpointMutation(c.config, OpCreate)
+	return &CheckpointCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Checkpoint entities.
+func (c *CheckpointClient) CreateBulk(builders ...*CheckpointCreate) *CheckpointCreateBulk {
+	return &CheckpointCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Checkpoint.
+func (c *CheckpointClient) Update() *CheckpointUpdate {
+	mutation := newCheckpointMutation(c.config, OpUpdate)
+	return &CheckpointUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CheckpointClient) UpdateOne(ch *Checkpoint) *CheckpointUpdateOne {
+	mutation := newCheckpointMutation(c.config, OpUpdateOne, withCheckpoint(ch))
+	return &CheckpointUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CheckpointClient) UpdateOneID(id int) *CheckpointUpdateOne {
+	mutation := newCheckpointMutation(c.config, OpUpdateOne, withCheckpointID(id))
+	return &CheckpointUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Checkpoint.
+func (c *CheckpointClient) Delete() *CheckpointDelete {
+	mutation := newCheckpointMutation(c.config, OpDelete)
+	return &CheckpointDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CheckpointClient) DeleteOne(ch *Checkpoint) *CheckpointDeleteOne {
+	return c.DeleteOneID(ch.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *CheckpointClient) DeleteOneID(id int) *CheckpointDeleteOne {
+	builder := c.Delete().Where(checkpoint.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CheckpointDeleteOne{builder}
+}
+
+// Query returns a query builder for Checkpoint.
+func (c *CheckpointClient) Query() *CheckpointQuery {
+	return &CheckpointQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Checkpoint entity by its id.
+func (c *CheckpointClient) Get(ctx context.Context, id int) (*Checkpoint, error) {
+	return c.Query().Where(checkpoint.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CheckpointClient) GetX(ctx context.Context, id int) *Checkpoint {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTask queries the task edge of a Checkpoint.
+func (c *CheckpointClient) QueryTask(ch *Checkpoint) *TaskQuery {
+	query := &TaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ch.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(checkpoint.Table, checkpoint.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, checkpoint.TaskTable, checkpoint.TaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CheckpointClient) Hooks() []Hook {
+	return c.hooks.Checkpoint
 }
 
 // TaskClient is a client for the Task schema.
@@ -227,6 +340,22 @@ func (c *TaskClient) GetX(ctx context.Context, id int) *Task {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryCheckpoints queries the checkpoints edge of a Task.
+func (c *TaskClient) QueryCheckpoints(t *Task) *CheckpointQuery {
+	query := &CheckpointQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(checkpoint.Table, checkpoint.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.CheckpointsTable, task.CheckpointsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -36,6 +36,27 @@ type Task struct {
 	EndTime *time.Time `json:"end_time,omitempty"`
 	// Deadline holds the value of the "deadline" field.
 	Deadline *time.Time `json:"deadline,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TaskQuery when eager-loading is set.
+	Edges TaskEdges `json:"edges"`
+}
+
+// TaskEdges holds the relations/edges for other nodes in the graph.
+type TaskEdges struct {
+	// Checkpoints holds the value of the checkpoints edge.
+	Checkpoints []*Checkpoint `json:"checkpoints,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// CheckpointsOrErr returns the Checkpoints value or an error if the edge
+// was not loaded in eager-loading.
+func (e TaskEdges) CheckpointsOrErr() ([]*Checkpoint, error) {
+	if e.loadedTypes[0] {
+		return e.Checkpoints, nil
+	}
+	return nil, &NotLoadedError{edge: "checkpoints"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -136,6 +157,11 @@ func (t *Task) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
+}
+
+// QueryCheckpoints queries the "checkpoints" edge of the Task entity.
+func (t *Task) QueryCheckpoints() *CheckpointQuery {
+	return (&TaskClient{config: t.config}).QueryCheckpoints(t)
 }
 
 // Update returns a builder for updating this Task.

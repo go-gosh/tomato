@@ -9,6 +9,19 @@ import (
 	"github.com/go-gosh/tomato/app/ent"
 )
 
+// The CheckpointFunc type is an adapter to allow the use of ordinary
+// function as Checkpoint mutator.
+type CheckpointFunc func(context.Context, *ent.CheckpointMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CheckpointFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CheckpointMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CheckpointMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The TaskFunc type is an adapter to allow the use of ordinary
 // function as Task mutator.
 type TaskFunc func(context.Context, *ent.TaskMutation) (ent.Value, error)

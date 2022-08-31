@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-gosh/tomato/app/ent/checkpoint"
 	"github.com/go-gosh/tomato/app/ent/predicate"
 	"github.com/go-gosh/tomato/app/ent/task"
 	"github.com/go-gosh/tomato/app/ent/user"
@@ -27,33 +28,615 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeCheckpoint = "Checkpoint"
 	TypeTask       = "Task"
 	TypeUser       = "User"
 	TypeUserConfig = "UserConfig"
 	TypeUserTomato = "UserTomato"
 )
 
-// TaskMutation represents an operation that mutates the Task nodes in the graph.
-type TaskMutation struct {
+// CheckpointMutation represents an operation that mutates the Checkpoint nodes in the graph.
+type CheckpointMutation struct {
 	config
 	op            Op
 	typ           string
 	id            *int
-	created_at    *time.Time
-	updated_at    *time.Time
-	title         *string
-	category      *string
-	star          *int8
-	addstar       *int8
+	point         *uint8
+	addpoint      *int8
 	content       *string
-	join_time     *time.Time
-	start_time    *time.Time
-	end_time      *time.Time
-	deadline      *time.Time
+	detail        *string
+	check_time    *time.Time
 	clearedFields map[string]struct{}
+	task          *int
+	clearedtask   bool
 	done          bool
-	oldValue      func(context.Context) (*Task, error)
-	predicates    []predicate.Task
+	oldValue      func(context.Context) (*Checkpoint, error)
+	predicates    []predicate.Checkpoint
+}
+
+var _ ent.Mutation = (*CheckpointMutation)(nil)
+
+// checkpointOption allows management of the mutation configuration using functional options.
+type checkpointOption func(*CheckpointMutation)
+
+// newCheckpointMutation creates new mutation for the Checkpoint entity.
+func newCheckpointMutation(c config, op Op, opts ...checkpointOption) *CheckpointMutation {
+	m := &CheckpointMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCheckpoint,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCheckpointID sets the ID field of the mutation.
+func withCheckpointID(id int) checkpointOption {
+	return func(m *CheckpointMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Checkpoint
+		)
+		m.oldValue = func(ctx context.Context) (*Checkpoint, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Checkpoint.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCheckpoint sets the old Checkpoint of the mutation.
+func withCheckpoint(node *Checkpoint) checkpointOption {
+	return func(m *CheckpointMutation) {
+		m.oldValue = func(context.Context) (*Checkpoint, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CheckpointMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CheckpointMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CheckpointMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CheckpointMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Checkpoint.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPoint sets the "point" field.
+func (m *CheckpointMutation) SetPoint(u uint8) {
+	m.point = &u
+	m.addpoint = nil
+}
+
+// Point returns the value of the "point" field in the mutation.
+func (m *CheckpointMutation) Point() (r uint8, exists bool) {
+	v := m.point
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPoint returns the old "point" field's value of the Checkpoint entity.
+// If the Checkpoint object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckpointMutation) OldPoint(ctx context.Context) (v uint8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPoint: %w", err)
+	}
+	return oldValue.Point, nil
+}
+
+// AddPoint adds u to the "point" field.
+func (m *CheckpointMutation) AddPoint(u int8) {
+	if m.addpoint != nil {
+		*m.addpoint += u
+	} else {
+		m.addpoint = &u
+	}
+}
+
+// AddedPoint returns the value that was added to the "point" field in this mutation.
+func (m *CheckpointMutation) AddedPoint() (r int8, exists bool) {
+	v := m.addpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPoint resets all changes to the "point" field.
+func (m *CheckpointMutation) ResetPoint() {
+	m.point = nil
+	m.addpoint = nil
+}
+
+// SetContent sets the "content" field.
+func (m *CheckpointMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *CheckpointMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Checkpoint entity.
+// If the Checkpoint object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckpointMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *CheckpointMutation) ResetContent() {
+	m.content = nil
+}
+
+// SetDetail sets the "detail" field.
+func (m *CheckpointMutation) SetDetail(s string) {
+	m.detail = &s
+}
+
+// Detail returns the value of the "detail" field in the mutation.
+func (m *CheckpointMutation) Detail() (r string, exists bool) {
+	v := m.detail
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDetail returns the old "detail" field's value of the Checkpoint entity.
+// If the Checkpoint object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckpointMutation) OldDetail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDetail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDetail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDetail: %w", err)
+	}
+	return oldValue.Detail, nil
+}
+
+// ResetDetail resets all changes to the "detail" field.
+func (m *CheckpointMutation) ResetDetail() {
+	m.detail = nil
+}
+
+// SetCheckTime sets the "check_time" field.
+func (m *CheckpointMutation) SetCheckTime(t time.Time) {
+	m.check_time = &t
+}
+
+// CheckTime returns the value of the "check_time" field in the mutation.
+func (m *CheckpointMutation) CheckTime() (r time.Time, exists bool) {
+	v := m.check_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCheckTime returns the old "check_time" field's value of the Checkpoint entity.
+// If the Checkpoint object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckpointMutation) OldCheckTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCheckTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCheckTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCheckTime: %w", err)
+	}
+	return oldValue.CheckTime, nil
+}
+
+// ResetCheckTime resets all changes to the "check_time" field.
+func (m *CheckpointMutation) ResetCheckTime() {
+	m.check_time = nil
+}
+
+// SetTaskID sets the "task" edge to the Task entity by id.
+func (m *CheckpointMutation) SetTaskID(id int) {
+	m.task = &id
+}
+
+// ClearTask clears the "task" edge to the Task entity.
+func (m *CheckpointMutation) ClearTask() {
+	m.clearedtask = true
+}
+
+// TaskCleared reports if the "task" edge to the Task entity was cleared.
+func (m *CheckpointMutation) TaskCleared() bool {
+	return m.clearedtask
+}
+
+// TaskID returns the "task" edge ID in the mutation.
+func (m *CheckpointMutation) TaskID() (id int, exists bool) {
+	if m.task != nil {
+		return *m.task, true
+	}
+	return
+}
+
+// TaskIDs returns the "task" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TaskID instead. It exists only for internal usage by the builders.
+func (m *CheckpointMutation) TaskIDs() (ids []int) {
+	if id := m.task; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTask resets all changes to the "task" edge.
+func (m *CheckpointMutation) ResetTask() {
+	m.task = nil
+	m.clearedtask = false
+}
+
+// Where appends a list predicates to the CheckpointMutation builder.
+func (m *CheckpointMutation) Where(ps ...predicate.Checkpoint) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *CheckpointMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Checkpoint).
+func (m *CheckpointMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CheckpointMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.point != nil {
+		fields = append(fields, checkpoint.FieldPoint)
+	}
+	if m.content != nil {
+		fields = append(fields, checkpoint.FieldContent)
+	}
+	if m.detail != nil {
+		fields = append(fields, checkpoint.FieldDetail)
+	}
+	if m.check_time != nil {
+		fields = append(fields, checkpoint.FieldCheckTime)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CheckpointMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case checkpoint.FieldPoint:
+		return m.Point()
+	case checkpoint.FieldContent:
+		return m.Content()
+	case checkpoint.FieldDetail:
+		return m.Detail()
+	case checkpoint.FieldCheckTime:
+		return m.CheckTime()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CheckpointMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case checkpoint.FieldPoint:
+		return m.OldPoint(ctx)
+	case checkpoint.FieldContent:
+		return m.OldContent(ctx)
+	case checkpoint.FieldDetail:
+		return m.OldDetail(ctx)
+	case checkpoint.FieldCheckTime:
+		return m.OldCheckTime(ctx)
+	}
+	return nil, fmt.Errorf("unknown Checkpoint field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CheckpointMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case checkpoint.FieldPoint:
+		v, ok := value.(uint8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPoint(v)
+		return nil
+	case checkpoint.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case checkpoint.FieldDetail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDetail(v)
+		return nil
+	case checkpoint.FieldCheckTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCheckTime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Checkpoint field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CheckpointMutation) AddedFields() []string {
+	var fields []string
+	if m.addpoint != nil {
+		fields = append(fields, checkpoint.FieldPoint)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CheckpointMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case checkpoint.FieldPoint:
+		return m.AddedPoint()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CheckpointMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case checkpoint.FieldPoint:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPoint(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Checkpoint numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CheckpointMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CheckpointMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CheckpointMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Checkpoint nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CheckpointMutation) ResetField(name string) error {
+	switch name {
+	case checkpoint.FieldPoint:
+		m.ResetPoint()
+		return nil
+	case checkpoint.FieldContent:
+		m.ResetContent()
+		return nil
+	case checkpoint.FieldDetail:
+		m.ResetDetail()
+		return nil
+	case checkpoint.FieldCheckTime:
+		m.ResetCheckTime()
+		return nil
+	}
+	return fmt.Errorf("unknown Checkpoint field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CheckpointMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.task != nil {
+		edges = append(edges, checkpoint.EdgeTask)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CheckpointMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case checkpoint.EdgeTask:
+		if id := m.task; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CheckpointMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CheckpointMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CheckpointMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedtask {
+		edges = append(edges, checkpoint.EdgeTask)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CheckpointMutation) EdgeCleared(name string) bool {
+	switch name {
+	case checkpoint.EdgeTask:
+		return m.clearedtask
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CheckpointMutation) ClearEdge(name string) error {
+	switch name {
+	case checkpoint.EdgeTask:
+		m.ClearTask()
+		return nil
+	}
+	return fmt.Errorf("unknown Checkpoint unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CheckpointMutation) ResetEdge(name string) error {
+	switch name {
+	case checkpoint.EdgeTask:
+		m.ResetTask()
+		return nil
+	}
+	return fmt.Errorf("unknown Checkpoint edge %s", name)
+}
+
+// TaskMutation represents an operation that mutates the Task nodes in the graph.
+type TaskMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	created_at         *time.Time
+	updated_at         *time.Time
+	title              *string
+	category           *string
+	star               *int8
+	addstar            *int8
+	content            *string
+	join_time          *time.Time
+	start_time         *time.Time
+	end_time           *time.Time
+	deadline           *time.Time
+	clearedFields      map[string]struct{}
+	checkpoints        map[int]struct{}
+	removedcheckpoints map[int]struct{}
+	clearedcheckpoints bool
+	done               bool
+	oldValue           func(context.Context) (*Task, error)
+	predicates         []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -573,6 +1156,60 @@ func (m *TaskMutation) ResetDeadline() {
 	delete(m.clearedFields, task.FieldDeadline)
 }
 
+// AddCheckpointIDs adds the "checkpoints" edge to the Checkpoint entity by ids.
+func (m *TaskMutation) AddCheckpointIDs(ids ...int) {
+	if m.checkpoints == nil {
+		m.checkpoints = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.checkpoints[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCheckpoints clears the "checkpoints" edge to the Checkpoint entity.
+func (m *TaskMutation) ClearCheckpoints() {
+	m.clearedcheckpoints = true
+}
+
+// CheckpointsCleared reports if the "checkpoints" edge to the Checkpoint entity was cleared.
+func (m *TaskMutation) CheckpointsCleared() bool {
+	return m.clearedcheckpoints
+}
+
+// RemoveCheckpointIDs removes the "checkpoints" edge to the Checkpoint entity by IDs.
+func (m *TaskMutation) RemoveCheckpointIDs(ids ...int) {
+	if m.removedcheckpoints == nil {
+		m.removedcheckpoints = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.checkpoints, ids[i])
+		m.removedcheckpoints[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCheckpoints returns the removed IDs of the "checkpoints" edge to the Checkpoint entity.
+func (m *TaskMutation) RemovedCheckpointsIDs() (ids []int) {
+	for id := range m.removedcheckpoints {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CheckpointsIDs returns the "checkpoints" edge IDs in the mutation.
+func (m *TaskMutation) CheckpointsIDs() (ids []int) {
+	for id := range m.checkpoints {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCheckpoints resets all changes to the "checkpoints" edge.
+func (m *TaskMutation) ResetCheckpoints() {
+	m.checkpoints = nil
+	m.clearedcheckpoints = false
+	m.removedcheckpoints = nil
+}
+
 // Where appends a list predicates to the TaskMutation builder.
 func (m *TaskMutation) Where(ps ...predicate.Task) {
 	m.predicates = append(m.predicates, ps...)
@@ -880,49 +1517,85 @@ func (m *TaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.checkpoints != nil {
+		edges = append(edges, task.EdgeCheckpoints)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TaskMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case task.EdgeCheckpoints:
+		ids := make([]ent.Value, 0, len(m.checkpoints))
+		for id := range m.checkpoints {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedcheckpoints != nil {
+		edges = append(edges, task.EdgeCheckpoints)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case task.EdgeCheckpoints:
+		ids := make([]ent.Value, 0, len(m.removedcheckpoints))
+		for id := range m.removedcheckpoints {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedcheckpoints {
+		edges = append(edges, task.EdgeCheckpoints)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TaskMutation) EdgeCleared(name string) bool {
+	switch name {
+	case task.EdgeCheckpoints:
+		return m.clearedcheckpoints
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TaskMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Task unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TaskMutation) ResetEdge(name string) error {
+	switch name {
+	case task.EdgeCheckpoints:
+		m.ResetCheckpoints()
+		return nil
+	}
 	return fmt.Errorf("unknown Task edge %s", name)
 }
 
