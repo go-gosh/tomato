@@ -30,3 +30,9 @@ func (s _tomatoServiceTestSuite) Test_ListTask() {
 	s.Len(task, 1)
 	s.T().Logf("%+v", task)
 }
+
+func (s _tomatoServiceTestSuite) Test_GetTodayTask_TaskHasPoint() {
+	task, err := s.svc.GetTaskByDay(s.getContext())
+	s.NoError(err)
+	s.Greater(len(task), 0)
+}
